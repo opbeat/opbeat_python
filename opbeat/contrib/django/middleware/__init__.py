@@ -174,7 +174,9 @@ class OpbeatAPMMiddleware(object):
                 self.client.end_transaction(status_code, view_func)
         except Exception:
             self.client.error_logger.error(
-                'Exception during timing of request',
+                'Exception during timing of request %s [%s]',
+                request.path_info,
+                getattr(response, 'status_code', '-'),
                 exc_info=True,
             )
         return response
