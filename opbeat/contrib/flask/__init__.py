@@ -166,7 +166,9 @@ class Opbeat(object):
             )
 
         if self.logging:
-            setup_logging(OpbeatHandler(self.client))
+            handler = OpbeatHandler(self.client)
+            handler.setLevel(logging.WARN)
+            setup_logging(handler)
 
         signals.got_request_exception.connect(self.handle_exception, sender=app, weak=False)
 
