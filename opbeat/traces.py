@@ -1,9 +1,8 @@
 import functools
 import logging
+import re
 import threading
 import time
-import re
-
 from collections import defaultdict
 from datetime import datetime
 
