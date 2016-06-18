@@ -2,6 +2,8 @@ import functools
 import logging
 import threading
 import time
+import re
+
 from collections import defaultdict
 from datetime import datetime
 
@@ -181,13 +183,14 @@ class _RequestGroup(object):
 
 
 class RequestsStore(object):
-    def __init__(self, get_frames, collect_frequency):
+    def __init__(self, get_frames, collect_frequency, ignore_patterns=None):
         self.cond = threading.Condition()
         self._get_frames = get_frames
         self._transactions = {}
         self._traces = defaultdict(list)
         self.collect_frequency = collect_frequency
         self._last_collect = time.time()
+        self._ignore_patterns = ignore_patterns or []
 
     def _add_transaction(self, elapsed, transaction, response_code):
         with self.cond:
@@ -238,12 +241,26 @@ class RequestsStore(object):
                 self._traces[trace.fingerprint].add(trace)
             self.cond.notify()
 
+    def _should_ignore(self, transaction_name):
+        for pattern in self._ignore_patterns:
+            print pattern, transaction_name
+            if re.search(pattern, transaction_name):
+                return True
+        return False
+
     def transaction_end(self, response_code, transaction_name):
         transaction = get_transaction()
         if transaction:
             elapsed = (time.time() - transaction.start_time)*1000
 
             transaction.end_transaction()
+
+            # Reset thread local transaction to subsequent call to this method
+            # behaves as expected.
+            thread_local.transaction = None
+            print transaction_name
+            if self._should_ignore(transaction_name):
+                return
 
             transaction_traces = transaction.transaction_traces
 
@@ -258,9 +275,6 @@ class RequestsStore(object):
             self._add_transaction(elapsed, transaction_name,
                                   response_code)
 
-            # Reset thread local transaction to subsequent call to this method
-            # behaves as expected.
-            thread_local.transaction = None
 
 
 class trace(object):
