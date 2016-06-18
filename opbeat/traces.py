@@ -242,7 +242,6 @@ class RequestsStore(object):
 
     def _should_ignore(self, transaction_name):
         for pattern in self._ignore_patterns:
-            print pattern, transaction_name
             if re.search(pattern, transaction_name):
                 return True
         return False
@@ -257,7 +256,6 @@ class RequestsStore(object):
             # Reset thread local transaction to subsequent call to this method
             # behaves as expected.
             thread_local.transaction = None
-            print transaction_name
             if self._should_ignore(transaction_name):
                 return
 
