@@ -189,7 +189,7 @@ class RequestsStore(object):
         self._traces = defaultdict(list)
         self.collect_frequency = collect_frequency
         self._last_collect = time.time()
-        self._ignore_patterns = ignore_patterns or []
+        self._ignore_patterns = [re.compile(p) for p in ignore_patterns or []]
 
     def _add_transaction(self, elapsed, transaction, response_code):
         with self.cond:
@@ -242,7 +242,7 @@ class RequestsStore(object):
 
     def _should_ignore(self, transaction_name):
         for pattern in self._ignore_patterns:
-            if re.search(pattern, transaction_name):
+            if pattern.search(transaction_name):
                 return True
         return False
 
