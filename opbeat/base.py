@@ -24,7 +24,7 @@ import zlib
 import opbeat
 from opbeat.conf import defaults
 from opbeat.traces import RequestsStore
-from opbeat.transport.http import AsyncHTTPTransport, HTTPTransport
+from opbeat.transport.http_urllib3 import AsyncUrllib3Transport, Urllib3Transport
 from opbeat.utils import opbeat_json as json
 from opbeat.utils import is_master_process, six, stacks, varmap
 from opbeat.utils.compat import atexit_register, urlparse
@@ -109,7 +109,7 @@ class Client(object):
     >>>     1/0
     >>> except ZeroDivisionError:
     >>>     ident = client.get_ident(client.capture_exception())
-    >>>     print "Exception caught; reference is %%s" %% ident
+    >>>     print ("Exception caught; reference is %%s" %% ident)
     """
     logger = logging.getLogger('opbeat')
     protocol_version = '1.0'
@@ -158,7 +158,7 @@ class Client(object):
             self._transport_class = import_string(transport_class)
         else:
             self._transport_class = (
-                AsyncHTTPTransport if self.async_mode else HTTPTransport
+                AsyncUrllib3Transport if self.async_mode else Urllib3Transport
             )
         self._transports = {}
 
@@ -431,7 +431,7 @@ class Client(object):
             # the danger of being forked into an inconsistent threading state
             self.logger.info('Sending message synchronously while in master '
                              'process. PID: %s', os.getpid())
-            return HTTPTransport(parsed_url)
+            return Urllib3Transport(parsed_url)
         if parsed_url not in self._transports:
             self._transports[parsed_url] = self._transport_class(parsed_url)
         return self._transports[parsed_url]
