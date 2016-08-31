@@ -1,14 +1,18 @@
-from urllib3_mock import Responses
-from urllib3.exceptions import TimeoutError, MaxRetryError
+import mock
 import pytest
+
 from opbeat.transport.base import TransportException
+from opbeat.transport.http_urllib3 import (AsyncUrllib3Transport,
+                                           Urllib3Transport)
+import urllib3.poolmanager
+from urllib3.exceptions import MaxRetryError, TimeoutError
+from urllib3_mock import Responses
 
 try:
     import urlparse
 except ImportError:
     from urllib import parse as urlparse
 
-from opbeat.transport.http_urllib3 import Urllib3Transport, AsyncUrllib3Transport
 
 
 responses = Responses('urllib3')
@@ -56,3 +60,23 @@ def test_generic_error():
     with pytest.raises(TransportException) as exc_info:
         transport.send('x', {})
     assert 'Oopsie' in str(exc_info.value)
+
+
+def test_http_proxy_environment_variable():
+    with mock.patch.dict('os.environ', {'HTTP_PROXY': 'http://example.com'}):
+        transport = Urllib3Transport(urlparse.urlparse('http://localhost:9999'))
+        assert isinstance(transport.http, urllib3.ProxyManager)
+
+
+def test_https_proxy_environment_variable():
+    with mock.patch.dict('os.environ', {'HTTPS_PROXY': 'https://example.com'}):
+        transport = Urllib3Transport(urlparse.urlparse('http://localhost:9999'))
+        assert isinstance(transport.http, urllib3.poolmanager.ProxyManager)
+
+
+def test_https_proxy_environment_variable_is_preferred():
+    with mock.patch.dict('os.environ', {'HTTPS_PROXY': 'https://example.com',
+                                        'HTTP_PROXY': 'http://example.com'}):
+        transport = Urllib3Transport(urlparse.urlparse('http://localhost:9999'))
+        assert isinstance(transport.http, urllib3.poolmanager.ProxyManager)
+        assert transport.http.proxy.scheme == 'https'

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import certifi
 import urllib3
 from urllib3.exceptions import MaxRetryError, TimeoutError
@@ -9,18 +10,21 @@ from opbeat.transport.base import TransportException
 from opbeat.transport.http import AsyncHTTPTransport, HTTPTransport
 
 
-ca_certs = certifi.where()
-
-
 class Urllib3Transport(HTTPTransport):
 
     scheme = ['http', 'https']
 
     def __init__(self, parsed_url):
-        self.http = urllib3.PoolManager(
-            cert_reqs='CERT_REQUIRED' if ca_certs else 'CERT_NONE',
-            ca_certs=ca_certs,
-        )
+        kwargs = {
+            'cert_reqs': 'CERT_REQUIRED',
+            'ca_certs': certifi.where(),
+            'block': True,
+        }
+        proxy_url = os.environ.get('HTTPS_PROXY', os.environ.get('HTTP_PROXY'))
+        if proxy_url:
+            self.http = urllib3.ProxyManager(proxy_url, **kwargs)
+        else:
+            self.http = urllib3.PoolManager(**kwargs)
         super(Urllib3Transport, self).__init__(parsed_url)
 
     def send(self, data, headers, timeout=None):
