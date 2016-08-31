@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
+
 import certifi
 import urllib3
 from urllib3.exceptions import MaxRetryError, TimeoutError
-
 
 from opbeat.conf import defaults
 from opbeat.transport.base import TransportException

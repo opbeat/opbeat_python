@@ -1,12 +1,12 @@
 import mock
 import pytest
+import urllib3.poolmanager
+from urllib3.exceptions import MaxRetryError, TimeoutError
+from urllib3_mock import Responses
 
 from opbeat.transport.base import TransportException
 from opbeat.transport.http_urllib3 import (AsyncUrllib3Transport,
                                            Urllib3Transport)
-import urllib3.poolmanager
-from urllib3.exceptions import MaxRetryError, TimeoutError
-from urllib3_mock import Responses
 
 try:
     import urlparse

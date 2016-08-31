@@ -24,7 +24,8 @@ import zlib
 import opbeat
 from opbeat.conf import defaults
 from opbeat.traces import RequestsStore
-from opbeat.transport.http_urllib3 import AsyncUrllib3Transport, Urllib3Transport
+from opbeat.transport.http_urllib3 import (AsyncUrllib3Transport,
+                                           Urllib3Transport)
 from opbeat.utils import opbeat_json as json
 from opbeat.utils import is_master_process, six, stacks, varmap
 from opbeat.utils.compat import atexit_register, urlparse
