@@ -267,8 +267,8 @@ class ClientTest(TestCase):
             },
         )
 
-    @mock.patch('opbeat.base.Urllib3Transport.send')
-    @mock.patch('opbeat.base.Urllib3Transport.close')
+    @mock.patch('opbeat.transport.http_urllib3.Urllib3Transport.send')
+    @mock.patch('opbeat.transport.http_urllib3.Urllib3Transport.close')
     @mock.patch('opbeat.base.Client._traces_collect')
     def test_client_shutdown_sync(self, mock_traces_collect, mock_close,
                                   mock_send):
@@ -286,7 +286,7 @@ class ClientTest(TestCase):
         self.assertEqual(mock_close.call_count, 1)
         self.assertEqual(mock_traces_collect.call_count, 1)
 
-    @mock.patch('opbeat.base.Urllib3Transport.send')
+    @mock.patch('opbeat.transport.http_urllib3.Urllib3Transport.send')
     @mock.patch('opbeat.base.Client._traces_collect')
     def test_client_shutdown_async(self, mock_traces_collect, mock_send):
         client = Client(
