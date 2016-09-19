@@ -83,6 +83,7 @@ notifications:
 services:
 - redis-server
 - memcached
+- mongodb
 deploy:
   provider: releases
   api_key:
