@@ -31,5 +31,6 @@ pep8
 redis
 requests
 urllib3
+pymongo
 
 pytz
