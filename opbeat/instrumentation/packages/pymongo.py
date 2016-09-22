@@ -41,8 +41,21 @@ class PyMongoInstrumentation(AbstractInstrumentedModule):
     ]
 
     def call(self, module, method, wrapped, instance, args, kwargs):
-        instance_name = instance.name or instance.filename
         cls_name, method_name = method.split('.', 1)
-        signature = '.'.join([instance_name, method_name])
+        signature = '.'.join([instance.name, method_name])
+        with trace(signature, "db.mongodb.query"):
+            return wrapped(*args, **kwargs)
+
+
+class PyMongoBulkInstrumentation(AbstractInstrumentedModule):
+    name = 'pymongo'
+
+    instrument_list = [
+        ("pymongo.bulk", "BulkOperationBuilder.execute"),
+    ]
+
+    def call(self, module, method, wrapped, instance, args, kwargs):
+        collection = instance._BulkOperationBuilder__bulk.collection
+        signature = '.'.join([collection.name, 'bulk.execute'])
         with trace(signature, "db.mongodb.query"):
             return wrapped(*args, **kwargs)

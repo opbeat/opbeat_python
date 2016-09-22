@@ -7,6 +7,7 @@ _cls_register = set([
     'opbeat.instrumentation.packages.mysql.MySQLInstrumentation',
     'opbeat.instrumentation.packages.pylibmc.PyLibMcInstrumentation',
     'opbeat.instrumentation.packages.pymongo.PyMongoInstrumentation',
+    'opbeat.instrumentation.packages.pymongo.PyMongoBulkInstrumentation',
     'opbeat.instrumentation.packages.python_memcached.PythonMemcachedInstrumentation',
     'opbeat.instrumentation.packages.redis.RedisInstrumentation',
     'opbeat.instrumentation.packages.redis.RedisPipelineInstrumentation',

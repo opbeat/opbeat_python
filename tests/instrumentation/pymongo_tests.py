@@ -31,25 +31,23 @@ class InstrumentPyMongoTest(TestCase):
         self.db.blogposts.insert_one(blogpost)
         self.client.instrumentation_store.get_all()
         self.client.begin_transaction('transaction.test')
-        with trace('test_mongodb', 'test'):
-            count = self.db.blogposts.count()
-            self.assertEqual(count, 1)
+        count = self.db.blogposts.count()
+        self.assertEqual(count, 1)
         self.client.end_transaction('transaction.test')
         transactions, traces = self.client.instrumentation_store.get_all()
-        self.assertEqual(traces[0]['kind'], 'db.mongodb.query')
-        self.assertEqual(traces[0]['signature'], 'blogposts.count')
+        self.assertEqual(traces[-1]['kind'], 'db.mongodb.query')
+        self.assertEqual(traces[-1]['signature'], 'blogposts.count')
 
     def test_collection_insert_one(self):
         blogpost = {'author': 'Tom', 'text': 'Foo',
                     'date': datetime.datetime.utcnow()}
         self.client.begin_transaction('transaction.test')
-        with trace('test_mongodb', 'test'):
-            r = self.db.blogposts.insert_one(blogpost)
-            self.assertIsNotNone(r.inserted_id)
+        r = self.db.blogposts.insert_one(blogpost)
+        self.assertIsNotNone(r.inserted_id)
         self.client.end_transaction('transaction.test')
         transactions, traces = self.client.instrumentation_store.get_all()
-        self.assertEqual(traces[1]['kind'], 'db.mongodb.query')
-        self.assertEqual(traces[1]['signature'], 'blogposts.insert_one')
+        self.assertEqual(traces[-1]['kind'], 'db.mongodb.query')
+        self.assertEqual(traces[-1]['signature'], 'blogposts.insert_one')
 
     def test_collection_insert_many(self):
         blogpost = {'author': 'Tom', 'text': 'Foo',
@@ -86,3 +84,15 @@ class InstrumentPyMongoTest(TestCase):
         transactions, traces = self.client.instrumentation_store.get_all()
         self.assertEqual(traces[-1]['kind'], 'db.mongodb.query')
         self.assertEqual(traces[-1]['signature'], 'blogposts.delete_one')
+
+    def test_bulk_execute(self):
+        self.client.begin_transaction('transaction.test')
+        bulk = self.db.test_bulk.initialize_ordered_bulk_op()
+        bulk.insert({'x': 'y'})
+        bulk.insert({'z': 'x'})
+        bulk.find({'x': 'y'}).replace_one({'x': 'z'})
+        bulk.execute()
+        self.client.end_transaction('transaction.test')
+        transactions, traces = self.client.instrumentation_store.get_all()
+        self.assertEqual(traces[-1]['kind'], 'db.mongodb.query')
+        self.assertEqual(traces[-1]['signature'], 'test_bulk.bulk.execute')
