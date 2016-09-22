@@ -44,5 +44,5 @@ class PyMongoInstrumentation(AbstractInstrumentedModule):
         instance_name = instance.name or instance.filename
         cls_name, method_name = method.split('.', 1)
         signature = '.'.join([instance_name, method_name])
-        with trace(signature, "db.pymongo.query"):
+        with trace(signature, "db.mongodb.query"):
             return wrapped(*args, **kwargs)
