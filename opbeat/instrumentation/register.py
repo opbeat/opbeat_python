@@ -8,6 +8,7 @@ _cls_register = set([
     'opbeat.instrumentation.packages.pylibmc.PyLibMcInstrumentation',
     'opbeat.instrumentation.packages.pymongo.PyMongoInstrumentation',
     'opbeat.instrumentation.packages.pymongo.PyMongoBulkInstrumentation',
+    'opbeat.instrumentation.packages.pymongo.PyMongoCursorInstrumentation',
     'opbeat.instrumentation.packages.python_memcached.PythonMemcachedInstrumentation',
     'opbeat.instrumentation.packages.redis.RedisInstrumentation',
     'opbeat.instrumentation.packages.redis.RedisPipelineInstrumentation',

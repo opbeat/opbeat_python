@@ -18,7 +18,6 @@ class PyMongoInstrumentation(AbstractInstrumentedModule):
         ("pymongo.collection", "Collection.drop_index"),
         ("pymongo.collection", "Collection.drop_indexes"),
         ("pymongo.collection", "Collection.ensure_index"),
-        ("pymongo.collection", "Collection.find"),
         ("pymongo.collection", "Collection.find_and_modify"),
         ("pymongo.collection", "Collection.find_one"),
         ("pymongo.collection", "Collection.find_one_and_delete"),
@@ -42,7 +41,7 @@ class PyMongoInstrumentation(AbstractInstrumentedModule):
 
     def call(self, module, method, wrapped, instance, args, kwargs):
         cls_name, method_name = method.split('.', 1)
-        signature = '.'.join([instance.name, method_name])
+        signature = '.'.join([instance.full_name, method_name])
         with trace(signature, "db.mongodb.query"):
             return wrapped(*args, **kwargs)
 
@@ -56,6 +55,20 @@ class PyMongoBulkInstrumentation(AbstractInstrumentedModule):
 
     def call(self, module, method, wrapped, instance, args, kwargs):
         collection = instance._BulkOperationBuilder__bulk.collection
-        signature = '.'.join([collection.name, 'bulk.execute'])
+        signature = '.'.join([collection.full_name, 'bulk.execute'])
+        with trace(signature, "db.mongodb.query"):
+            return wrapped(*args, **kwargs)
+
+
+class PyMongoCursorInstrumentation(AbstractInstrumentedModule):
+    name = 'pymongo'
+
+    instrument_list = [
+        ("pymongo.cursor", "Cursor._refresh"),
+    ]
+
+    def call(self, module, method, wrapped, instance, args, kwargs):
+        collection = instance.collection
+        signature = '.'.join([collection.full_name, 'cursor.refresh'])
         with trace(signature, "db.mongodb.query"):
             return wrapped(*args, **kwargs)
