@@ -1,5 +1,4 @@
 import datetime
-import json
 import os
 
 import pymongo
@@ -52,7 +51,6 @@ class InstrumentPyMongoTest(TestCase):
         self.assertEqual(count, 1)
         self.client.end_transaction('transaction.test')
         transactions, traces = self.client.instrumentation_store.get_all()
-        print(json.dumps(traces, indent=4))
         trace = _get_pymongo_trace(traces)
         self.assertEqual(trace['kind'], 'db.mongodb.query')
         self.assertEqual(trace['signature'], 'opbeat_test.blogposts.count')
@@ -200,7 +198,6 @@ class InstrumentPyMongoTest(TestCase):
         self.client.begin_transaction('transaction.test')
         r = self.db.blogposts.update_one({'author': 'Tom'},
                                      {'$set': {'author': 'Jerry'}})
-        print(dir(r))
         self.assertEqual(r.modified_count, 1)
         self.client.end_transaction('transaction.test')
         transactions, traces = self.client.instrumentation_store.get_all()
@@ -217,7 +214,6 @@ class InstrumentPyMongoTest(TestCase):
         self.client.begin_transaction('transaction.test')
         r = self.db.blogposts.update_many({'author': 'Tom'},
                                      {'$set': {'author': 'Jerry'}})
-        print(dir(r))
         self.assertEqual(r.modified_count, 1)
         self.client.end_transaction('transaction.test')
         transactions, traces = self.client.instrumentation_store.get_all()
