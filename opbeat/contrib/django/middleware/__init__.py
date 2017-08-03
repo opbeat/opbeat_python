@@ -51,13 +51,13 @@ class Opbeat404CatchMiddleware(MiddlewareMixin):
                     django_settings.DEBUG
                 ):
             return response
-        data = client.get_data_from_request(request)
-        data.update({
+        data = {
             'level': logging.INFO,
             'logger': 'http404',
-        })
+        }
         result = client.capture(
             'Message',
+            request=request,
             param_message={
                 'message': 'Page Not Found: %s',
                 'params': [request.build_absolute_uri()]
