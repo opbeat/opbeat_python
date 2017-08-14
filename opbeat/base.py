@@ -37,18 +37,6 @@ from opbeat.utils.stacks import get_culprit, iter_stack_frames
 __all__ = ('Client',)
 
 
-class ModuleProxyCache(dict):
-    def __missing__(self, key):
-        module, class_name = key.rsplit('.', 1)
-
-        handler = getattr(__import__(module, {},
-                {}, [class_name]), class_name)
-
-        self[key] = handler
-
-        return handler
-
-
 class ClientState(object):
     ONLINE = 1
     ERROR = 0
@@ -188,8 +176,7 @@ class Client(object):
             self.processors = defaults.PROCESSORS
         else:
             self.processors = processors
-
-        self.module_cache = ModuleProxyCache()
+        self.processors = [import_string(p) for p in self.processors]
 
         self.instrumentation_store = TransactionsStore(
             lambda: self.get_stack_info_for_trace(iter_stack_frames(), False),
@@ -211,10 +198,6 @@ class Client(object):
                 value = os.environ[self.environment_config_map[attr_name]]
             setattr(self, attr_name, six.text_type(value))
 
-    def get_processors(self):
-        for processor in self.processors:
-            yield self.module_cache[processor](self)
-
     def get_ident(self, result):
         """
         Returns a searchable string representing a message.
@@ -225,7 +208,7 @@ class Client(object):
         return result
 
     def get_handler(self, name):
-        return self.module_cache[name](self)
+        return import_string(name)
 
     def get_stack_info_for_trace(self, frames, extended=True):
         """Overrideable in derived clients to add frames/info, e.g. templates
@@ -252,16 +235,14 @@ class Client(object):
         if stack is None:
             stack = self.auto_log_stacks
 
-        self.build_msg(data=data)
-
         # if '.' not in event_type:
         # Assume it's a builtin
         event_type = 'opbeat.events.%s' % event_type
 
         handler = self.get_handler(event_type)
-
-        result = handler.capture(**kwargs)
-
+        result = handler.capture(self, data=data, **kwargs)
+        if self._filter_exception_type(result):
+            return
         # data (explicit) culprit takes over auto event detection
         culprit = result.pop('culprit', None)
         if data.get('culprit'):
@@ -271,32 +252,31 @@ class Client(object):
             if k not in data:
                 data[k] = v
 
-        if stack and 'stacktrace' not in data:
+        log = data.get('log', {})
+        if stack and 'stacktrace' not in log:
             if stack is True:
                 frames = iter_stack_frames()
             else:
                 frames = stack
+            frames = varmap(lambda k, v: shorten(
+                v,
+                string_length=self.string_max_length,
+                list_length=self.list_max_length
+            ), stacks.get_stack_info(frames))
+            log['stacktrace'] = frames
 
-            data.update({
-                'stacktrace': {
-                    'frames': varmap(lambda k, v: shorten(v,
-                        string_length=self.string_max_length,
-                        list_length=self.list_max_length),
-                                     stacks.get_stack_info(frames))
-                },
-            })
-
-        if 'stacktrace' in data and not culprit:
+        if 'stacktrace' in log and not culprit:
             culprit = get_culprit(
-                data['stacktrace']['frames'],
+                log['stacktrace'],
                 self.include_paths, self.exclude_paths
             )
 
-        if not data.get('level'):
-            data['level'] = 'error'
+        if not log.get('level'):
+            log['level'] = 'error'
 
-        if isinstance( data['level'], six.integer_types):
-            data['level'] = logging.getLevelName(data['level']).lower()
+        if isinstance(log['level'], six.integer_types):
+            log['level'] = logging.getLevelName(log['level']).lower()
+        data['log'] = log
 
         data.setdefault('extra', {})
 
@@ -309,14 +289,11 @@ class Client(object):
             data['culprit'] = culprit
 
         # Run the data through processors
-        for processor in self.get_processors():
-            data.update(processor.process(data))
+        for processor in self.processors:
+            data = processor(self, data)
 
         # Make sure all data is coerced
         data = transform(data)
-
-        if 'message' not in data:
-            data['message'] = handler.to_string(data)
 
         # Make sure certain values are not too long
         for v in defaults.MAX_LENGTH_VALUES:
@@ -326,12 +303,10 @@ class Client(object):
                           )
 
         data.update({
-            'timestamp':  date,
-            # 'time_spent': time_spent,
-            'client_supplied_id': event_id,
+            'timestamp':  date.strftime(defaults.TIMESTAMP_FORMAT),
         })
 
-        return data
+        return self.build_msg({'errors': [data]})
 
     def build_msg(self, data=None, **kwargs):
         data = data or {}
@@ -340,7 +315,7 @@ class Client(object):
         data.update(**kwargs)
         return data
 
-    def capture(self, event_type, data=None, date=None, api_path=None,
+    def capture(self, event_type, data=None, date=None,
                 extra=None, stack=None, **kwargs):
         """
         Captures and processes an event and pipes it off to Client.send.
@@ -384,14 +359,9 @@ class Client(object):
 
         data = self.build_msg_for_logging(event_type, data, date,
                                           extra, stack, **kwargs)
-
-        if not api_path:
-            api_path = defaults.ERROR_API_PATH
-
-        data['servers'] = [server+api_path for server in self.servers]
-        self.send(**data)
-
-        return data['client_supplied_id']
+        if data:
+            self.send(**data)
+            return data['errors'][0]['id']
 
     def _send_remote(self, url, data, headers=None):
         if headers is None:
@@ -442,8 +412,15 @@ class Client(object):
         if exc_type in self.filter_exception_types_dict:
             exc_to_filter_module = self.filter_exception_types_dict[exc_type]
             if not exc_to_filter_module or exc_to_filter_module == exc_module:
-                    return True
-
+                if exc_module:
+                    exc_name = '%s.%s' % (exc_module, exc_type)
+                else:
+                    exc_name = exc_type
+                self.logger.info(
+                    'Ignored %s exception due to exception type filter',
+                    exc_name
+                )
+                return True
         return False
 
     def send_remote(self, url, data, headers=None):

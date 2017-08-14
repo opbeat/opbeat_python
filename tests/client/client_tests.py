@@ -344,7 +344,7 @@ class ClientTest(TestCase):
         })
 
         self.assertEquals(len(self.client.events), 1)
-        event = self.client.events.pop(0)
+        event = self.client.events.pop(0)['errors'][0]
         self.assertEquals(event['message'], 'foo')
 
     def test_explicit_message_on_exception_event(self):
@@ -354,7 +354,7 @@ class ClientTest(TestCase):
             self.client.capture('Exception', data={'message': 'foobar'})
 
         self.assertEquals(len(self.client.events), 1)
-        event = self.client.events.pop(0)
+        event = self.client.events.pop(0)['errors'][0]
         self.assertEquals(event['message'], 'foobar')
 
     def test_exception_event(self):
@@ -364,17 +364,16 @@ class ClientTest(TestCase):
             self.client.capture('Exception')
 
         self.assertEquals(len(self.client.events), 1)
-        event = self.client.events.pop(0)
-        self.assertEquals(event['message'], 'ValueError: foo')
+        event = self.client.events.pop(0)['errors'][0]
         self.assertTrue('exception' in event)
         exc = event['exception']
+        self.assertEquals(exc['message'], 'ValueError: foo')
         self.assertEquals(exc['type'], 'ValueError')
-        self.assertEquals(exc['value'], 'foo')
         self.assertEquals(exc['module'], ValueError.__module__)  # this differs in some Python versions
-        self.assertTrue('stacktrace' in event)
-        frames = event['stacktrace']
-        self.assertEquals(len(frames['frames']), 1)
-        frame = frames['frames'][0]
+        self.assertTrue('stacktrace' in exc)
+        frames = exc['stacktrace']
+        self.assertEquals(len(frames), 1)
+        frame = frames[0]
         self.assertEquals(frame['abs_path'], __file__.replace('.pyc', '.py'))
         self.assertEquals(frame['filename'], 'tests/client/client_tests.py')
         self.assertEquals(frame['module'], __name__)
@@ -385,8 +384,8 @@ class ClientTest(TestCase):
         self.client.capture('Message', message='test')
 
         self.assertEquals(len(self.client.events), 1)
-        event = self.client.events.pop(0)
-        self.assertEquals(event['message'], 'test')
+        event = self.client.events.pop(0)['errors'][0]
+        self.assertEquals(event['log']['message'], 'test')
         self.assertFalse('stacktrace' in event)
         self.assertTrue('timestamp' in event)
 
@@ -436,7 +435,7 @@ class ClientTest(TestCase):
         self.client.capture('Message', message='test', data={'logger': 'test'})
 
         self.assertEquals(len(self.client.events), 1)
-        event = self.client.events.pop(0)
+        event = self.client.events.pop(0)['errors'][0]
         self.assertEquals(event['logger'], 'test')
         self.assertTrue('timestamp' in event)
 
@@ -446,8 +445,8 @@ class ClientTest(TestCase):
         self.client.capture('Message', message=message)
 
         self.assertEquals(len(self.client.events), 1)
-        event = self.client.events.pop(0)
-        self.assertTrue(len(event['message']) < 201, len(event['message']))
+        event = self.client.events.pop(0)['errors'][0]
+        self.assertTrue(len(event['log']['message']) < 201, len(event['log']['message']))
 
     def test_long_culprit(self):
         culprit = 'c' * 101
@@ -455,7 +454,7 @@ class ClientTest(TestCase):
         self.client.capture('Message', message='test', data={'culprit':culprit})
 
         self.assertEquals(len(self.client.events), 1)
-        event = self.client.events.pop(0)
+        event = self.client.events.pop(0)['errors'][0]
         self.assertTrue(len(event['culprit']) < 101, len(event['culprit']))
 
     def test_long_logger(self):
@@ -464,7 +463,7 @@ class ClientTest(TestCase):
         self.client.capture('Message', message='test', data={'logger':logger})
 
         self.assertEquals(len(self.client.events), 1)
-        event = self.client.events.pop(0)
+        event = self.client.events.pop(0)['errors'][0]
         self.assertTrue(len(event['logger']) < 61, len(event['logger']))
 
     @mock.patch('opbeat.base.Client.send')

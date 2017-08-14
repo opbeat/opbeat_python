@@ -177,11 +177,12 @@ class OpbeatAPMMiddleware(MiddlewareMixin):
                     request
                 )
                 transaction_data = self.client.get_data_from_request(request)
-                self.client.set_transaction_extra_data(transaction_data['http'],
-                                                       'http')
-                if 'user' in transaction_data:
+                self.client.set_transaction_extra_data(transaction_data,
+                                                       'request')
+                user_data = self.client.get_user_info(request)
+                if user_data:
                     self.client.set_transaction_extra_data(
-                        transaction_data['user'], 'user')
+                        user_data, 'user')
 
                 self.client.end_transaction(transaction_name, status_code)
         except Exception:
