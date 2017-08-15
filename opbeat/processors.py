@@ -27,7 +27,7 @@ SANITIZE_FIELD_NAMES = frozenset([
 ])
 
 SANITIZE_VALUE_PATTERNS = [
-    re.compile(r'^[- \d]{16,19}$'),
+    re.compile(r'^[- \d]{16,19}$'),  # credit card numbers, with or without spacers
 ]
 
 
