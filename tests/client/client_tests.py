@@ -64,7 +64,7 @@ class ClientTest(TestCase):
 
     def test_app_info(self):
         app_info = self.client.get_app_info()
-        assert app_info['name'] == self.client.app_id
+        assert app_info['name'] == self.client.app_name
         assert app_info['language'] == {
             'name': 'python',
             'version': platform.python_version()
@@ -76,12 +76,12 @@ class ClientTest(TestCase):
 
     def test_config_by_environment(self):
         with mock.patch.dict('os.environ', {
-            'OPBEAT_APP_ID': 'app',
+            'OPBEAT_APP_NAME': 'app',
             'OPBEAT_SECRET_TOKEN': 'token',
             'OPBEAT_GIT_REF': 'aabbccdd'
         }):
             client = Client()
-            self.assertEqual(client.app_id, 'app')
+            self.assertEqual(client.app_name, 'app')
             self.assertEqual(client.secret_token, 'token')
             self.assertEqual(client.git_ref, 'aabbccdd')
             self.assertEqual(client.is_send_disabled, False)
@@ -108,18 +108,16 @@ class ClientTest(TestCase):
 
         client = Client(
             servers=['localhost'],
-            organization_id=MyValue('foo'),
-            app_id=MyValue('bar'),
+            app_name=MyValue('bar'),
             secret_token=MyValue('bay')
         )
         assert isinstance(client.secret_token, six.string_types)
-        assert isinstance(client.app_id, six.string_types)
+        assert isinstance(client.app_name, six.string_types)
 
     def test_custom_transport(self):
         client = Client(
             servers=['localhost'],
-            organization_id='foo',
-            app_id='bar',
+            app_name='bar',
             secret_token='baz',
             transport_class='tests.client.client_tests.DummyTransport',
         )
@@ -128,8 +126,7 @@ class ClientTest(TestCase):
     def test_empty_processor_list(self):
         client = Client(
             servers=['http://example.com'],
-            organization_id='organization_id',
-            app_id='app_id',
+            app_name='app_name',
             secret_token='secret',
             processors=[],
         )
@@ -143,8 +140,7 @@ class ClientTest(TestCase):
 
         client = Client(
             servers=['http://example.com'],
-            organization_id='organization_id',
-            app_id='app_id',
+            app_name='app_name',
             secret_token='secret',
             async_mode=False,
         )
@@ -172,8 +168,7 @@ class ClientTest(TestCase):
 
         client = Client(
             servers=['http://example.com'],
-            organization_id='organization_id',
-            app_id='app_id',
+            app_name='app_name',
             secret_token='secret',
             async_mode=False,
         )
@@ -200,8 +195,7 @@ class ClientTest(TestCase):
 
         client = Client(
             servers=['http://example.com'],
-            organization_id='organization_id',
-            app_id='app_id',
+            app_name='app_name',
             secret_token='secret',
             async_mode=True,
         )
@@ -232,8 +226,7 @@ class ClientTest(TestCase):
         access_token = "secret"
         client = Client(
             servers=['http://example.com'],
-            organization_id='organization_id',
-            app_id='app_id',
+            app_name='app_name',
             secret_token='secret',
         )
         client.send(**{
@@ -257,8 +250,7 @@ class ClientTest(TestCase):
         with mock.patch.dict('os.environ', {'OPBEAT_DISABLE_SEND': 'true'}):
             client = Client(
                 servers=['http://example.com'],
-                organization_id='organization_id',
-                app_id='app_id',
+                app_name='app_name',
                 secret_token='secret',
             )
         client.send(**{
@@ -273,8 +265,7 @@ class ClientTest(TestCase):
         time.return_value = 1328055286.51
         client = Client(
             servers=['http://example.com'],
-            organization_id='organization_id',
-            app_id='app_id',
+            app_name='app_name',
             secret_token='secret',
         )
         client.send(auth_header='foo', **{
@@ -298,8 +289,7 @@ class ClientTest(TestCase):
                                   mock_send):
         client = Client(
             servers=['http://example.com'],
-            organization_id='organization_id',
-            app_id='app_id',
+            app_name='app_name',
             secret_token='secret',
             async_mode=False,
         )
@@ -315,8 +305,7 @@ class ClientTest(TestCase):
     def test_client_shutdown_async(self, mock_traces_collect, mock_send):
         client = Client(
             servers=['http://example.com'],
-            organization_id='organization_id',
-            app_id='app_id',
+            app_name='app_name',
             secret_token='secret',
             async_mode=True,
         )
@@ -439,8 +428,7 @@ class ClientTest(TestCase):
     def test_metrics_collection(self, should_collect, mock_send):
         client = Client(
             servers=['http://example.com'],
-            organization_id='organization_id',
-            app_id='app_id',
+            app_name='app_name',
             secret_token='secret',
         )
         should_collect.return_value = False
@@ -475,8 +463,7 @@ class ClientTest(TestCase):
         is_master_process.return_value = True
         client = Client(
             servers=['http://example.com'],
-            organization_id='organization_id',
-            app_id='app_id',
+            app_name='app_name',
             secret_token='secret',
             async_mode=True,
         )
@@ -490,8 +477,7 @@ class ClientTest(TestCase):
     def test_ignore_patterns(self, should_collect, mock_send):
         client = Client(
             servers=['http://example.com'],
-            organization_id='organization_id',
-            app_id='app_id',
+            app_name='app_name',
             secret_token='secret',
             async_mode=True,
             transactions_ignore_patterns=[

@@ -858,8 +858,7 @@ class DjangoClientNoTempTest(TestCase):
     def setUp(self):
         self.client = DjangoClient(
             servers=['http://example.com'],
-            organization_id='org',
-            app_id='app',
+            app_name='app',
             secret_token='secret',
             filter_exception_types=['KeyError', 'tests.contrib.django.fake1.FakeException']
         )
@@ -1192,8 +1191,7 @@ class DjangoManagementCommandTest(TestCase):
             call_command('opbeat', 'check', stdout=stdout)
         output = stdout.getvalue()
         assert 'Configuration errors detected' in output
-        assert 'ORGANIZATION_ID not set' in output
-        assert 'APP_ID not set' in output
+        assert 'APP_NAME not set' in output
         assert 'SECRET_TOKEN not set' in output
 
     def test_middleware_not_set(self):

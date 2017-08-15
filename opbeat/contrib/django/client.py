@@ -170,7 +170,7 @@ class DjangoClient(Client):
         if is_http_request:
             # attach the opbeat object to the request
             request.opbeat = {
-                'app_id': data.get('app_id', self.app_id),
+                'app_name': data.get('app_name', self.app_name),
                 'id': self.get_ident(result),
             }
 

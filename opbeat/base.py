@@ -77,7 +77,7 @@ class Client(object):
     HTTP API to Opbeat servers.
 
     Will read default configuration from the environment variable
-    ``OPBEAT_ORGANIZATION_ID``, ``OPBEAT_APP_ID`` and ``OPBEAT_SECRET_TOKEN``
+    ``OPBEAT_APP_NAME`` and ``OPBEAT_SECRET_TOKEN``
     if available. ::
 
     >>> from opbeat import Client
@@ -88,8 +88,7 @@ class Client(object):
     >>> # Configure the client manually
     >>> client = Client(
     >>>     include_paths=['my.package'],
-    >>>     organization_id='org_id',
-    >>>     app_id='app_id',
+    >>>     app_name='app_name',
     >>>     secret_token='secret_token',
     >>> )
 
@@ -104,29 +103,28 @@ class Client(object):
     protocol_version = '1.0'
 
     environment_config_map = {
-        'organization_id': 'OPBEAT_ORGANIZATION_ID',
-        'app_id': 'OPBEAT_APP_ID',
+        'app_name': 'OPBEAT_APP_NAME',
         'secret_token': 'OPBEAT_SECRET_TOKEN',
         'git_ref': 'OPBEAT_GIT_REF',
         'app_version': 'OPBEAT_APP_VERSION',
     }
 
-    def __init__(self, organization_id=None, app_id=None, secret_token=None,
+    def __init__(self, app_name=None, secret_token=None,
                  transport_class=None, include_paths=None, exclude_paths=None,
-                 timeout=None, hostname=None, auto_log_stacks=None, key=None,
+                 timeout=None, hostname=None, auto_log_stacks=None,
                  string_max_length=None, list_max_length=None, processors=None,
-                 filter_exception_types=None, servers=None, api_path=None,
+                 filter_exception_types=None, servers=None,
                  async_mode=None, traces_send_freq_secs=None,
-                 transactions_ignore_patterns=None, git_ref=None, app_version=None,
+                 transactions_ignore_patterns=None, git_ref=None,
+                 app_version=None,
                  **kwargs):
-        self.app_id = self.secret_token = self.git_ref = self.app_version = None
+        self.app_name = self.secret_token = self.git_ref = self.app_version = None
         # configure loggers first
         cls = self.__class__
-        self.logger = logging.getLogger('%s.%s' % (cls.__module__,
-            cls.__name__))
+        self.logger = logging.getLogger('%s.%s' % (cls.__module__, cls.__name__))
         self.error_logger = logging.getLogger('opbeat.errors')
         self.state = ClientState()
-        self._configure(organization_id=organization_id, app_id=app_id,
+        self._configure(app_name=app_name,
                         secret_token=secret_token, git_ref=git_ref,
                         app_version=app_version)
         self.servers = servers or defaults.SERVERS
@@ -140,8 +138,7 @@ class Client(object):
         self._transports = {}
 
         # servers may be set to a NoneType (for Django)
-        if self.servers and not (
-                        self.organization_id and self.app_id and self.secret_token):
+        if self.servers and not (self.app_name and self.secret_token):
             msg = 'Missing configuration for Opbeat client. Please see documentation.'
             self.logger.info(msg)
 
@@ -619,7 +616,7 @@ class Client(object):
         else:
             runtime_version = language_version
         return {
-            'name': self.app_id,
+            'name': self.app_name,
             'version': self.app_version,
             'agent': {
                 'name': 'opbeat-python',

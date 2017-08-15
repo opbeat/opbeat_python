@@ -64,7 +64,7 @@ class Opbeat404CatchMiddleware(MiddlewareMixin):
             }, data=data
         )
         request.opbeat = {
-            'app_id': data.get('app_id', client.app_id),
+            'app_name': data.get('app_name', client.app_name),
             'id': client.get_ident(result),
         }
         return response
