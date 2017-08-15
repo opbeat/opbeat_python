@@ -22,4 +22,3 @@ class MessageTest(TestCase):
         }
 
         self.assertEqual(message.to_string(client, data), formatted_message)
-

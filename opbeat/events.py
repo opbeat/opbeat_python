@@ -129,7 +129,6 @@ class Message(BaseEvent):
 
     @staticmethod
     def capture(client, param_message=None, message=None, **kwargs):
-
         if message:
             param_message = {'message': message}
         params = param_message.get('params', ())

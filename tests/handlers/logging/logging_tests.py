@@ -45,13 +45,11 @@ class LoggingIntegrationTest(TestCase):
         ))
         self.assertEquals(len(self.client.events), 1)
         event = self.client.events.pop(0)['errors'][0]
-        self.assertEquals(event['extra']['url'], 'http://example.com')
-        self.assertFalse('stacktrace' in event)
+        self.assertEquals(event['context']['custom']['url'], 'http://example.com')
+        self.assertFalse('stacktrace' in event['log'])
         self.assertFalse('exception' in event)
-        self.assertTrue('param_message' in event)
-        msg = event['param_message']
-        self.assertEquals(msg['message'], 'This is a test info with a url')
-        self.assertEquals(msg['params'], ())
+        self.assertTrue('param_message' in event['log'])
+        self.assertEquals(event['log']['param_message'], 'This is a test info with a url')
 
     def test_logger_exc_info(self):
         try:

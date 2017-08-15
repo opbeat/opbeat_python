@@ -91,8 +91,7 @@ class ClientTest(TestCase):
             client = Client()
             self.assertEqual(client.is_send_disabled, True)
 
-    @mock.patch('opbeat.base.Client.send')
-    def test_config_non_string_types(self, mock_send):
+    def test_config_non_string_types(self):
         """
         tests if we can handle non string types as configuration, e.g.
         Value types from django-configuration
@@ -113,12 +112,8 @@ class ClientTest(TestCase):
             app_id=MyValue('bar'),
             secret_token=MyValue('bay')
         )
-        client.capture('Message', message='foo')
-        args, kwargs = mock_send.call_args
-        self.assertEqual(
-            'localhost' + defaults.ERROR_API_PATH.format('foo', 'bar'),
-            kwargs['servers'][0]
-        )
+        assert isinstance(client.secret_token, six.string_types)
+        assert isinstance(client.app_id, six.string_types)
 
     def test_custom_transport(self):
         client = Client(
@@ -438,33 +433,6 @@ class ClientTest(TestCase):
         event = self.client.events.pop(0)['errors'][0]
         self.assertEquals(event['logger'], 'test')
         self.assertTrue('timestamp' in event)
-
-    def test_long_message(self):
-        message = 'm' * 201
-
-        self.client.capture('Message', message=message)
-
-        self.assertEquals(len(self.client.events), 1)
-        event = self.client.events.pop(0)['errors'][0]
-        self.assertTrue(len(event['log']['message']) < 201, len(event['log']['message']))
-
-    def test_long_culprit(self):
-        culprit = 'c' * 101
-
-        self.client.capture('Message', message='test', data={'culprit':culprit})
-
-        self.assertEquals(len(self.client.events), 1)
-        event = self.client.events.pop(0)['errors'][0]
-        self.assertTrue(len(event['culprit']) < 101, len(event['culprit']))
-
-    def test_long_logger(self):
-        logger = 'c' * 61
-
-        self.client.capture('Message', message='test', data={'logger':logger})
-
-        self.assertEquals(len(self.client.events), 1)
-        event = self.client.events.pop(0)['errors'][0]
-        self.assertTrue(len(event['logger']) < 61, len(event['logger']))
 
     @mock.patch('opbeat.base.Client.send')
     @mock.patch('opbeat.base.TransactionsStore.should_collect')

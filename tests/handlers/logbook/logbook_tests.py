@@ -45,7 +45,7 @@ class LogbookHandlerTest(TestCase):
             ))
         self.assertEquals(len(self.client.events), 1)
         event = self.client.events.pop(0)['errors'][0]
-        self.assertEquals(event['extra']['url'], 'http://example.com')
+        self.assertEquals(event['context']['custom']['url'], 'http://example.com')
         self.assertFalse('stacktrace' in event['log'])
         self.assertFalse('exception' in event)
         self.assertTrue('param_message' in event['log'])

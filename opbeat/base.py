@@ -119,6 +119,7 @@ class Client(object):
                  async_mode=None, traces_send_freq_secs=None,
                  transactions_ignore_patterns=None, git_ref=None, app_version=None,
                  **kwargs):
+        self.app_id = self.secret_token = self.git_ref = self.app_version = None
         # configure loggers first
         cls = self.__class__
         self.logger = logging.getLogger('%s.%s' % (cls.__module__,
@@ -234,6 +235,10 @@ class Client(object):
             date = datetime.datetime.utcnow()
         if stack is None:
             stack = self.auto_log_stacks
+        if 'context' not in data:
+            data['context'] = context = {}
+        else:
+            context = data['context']
 
         # if '.' not in event_type:
         # Assume it's a builtin
@@ -278,15 +283,10 @@ class Client(object):
             log['level'] = logging.getLevelName(log['level']).lower()
         data['log'] = log
 
-        data.setdefault('extra', {})
-
-        # Shorten lists/strings
-        for k, v in six.iteritems(extra):
-            data['extra'][k] = shorten(v, string_length=self.string_max_length,
-                    list_length=self.list_max_length)
-
         if culprit:
             data['culprit'] = culprit
+
+        context['custom'] = extra
 
         # Run the data through processors
         for processor in self.processors:
@@ -294,13 +294,6 @@ class Client(object):
 
         # Make sure all data is coerced
         data = transform(data)
-
-        # Make sure certain values are not too long
-        for v in defaults.MAX_LENGTH_VALUES:
-            if v in data:
-                data[v] = shorten(data[v],
-                            string_length=defaults.MAX_LENGTH_VALUES[v]
-                          )
 
         data.update({
             'timestamp':  date.strftime(defaults.TIMESTAMP_FORMAT),
