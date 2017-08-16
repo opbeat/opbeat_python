@@ -237,9 +237,21 @@ class DjangoClientTest(TestCase):
                               self.client.get,
                               reverse('opbeat-raise-exc'))
 
-            self.assertEquals(len(self.opbeat.events), 1)
-            event = self.opbeat.events.pop(0)['errors'][0]
-            assert event['context']['user'] == {}
+        self.assertEquals(len(self.opbeat.events), 1)
+        event = self.opbeat.events.pop(0)['errors'][0]
+        assert event['context']['user'] == {'id': None, 'is_authenticated': False, 'username': ''}
+
+    def test_user_info_without_auth_middleware(self):
+        with self.settings(MIDDLEWARE_CLASSES=[
+            m for m in settings.MIDDLEWARE_CLASSES
+            if m != 'django.contrib.auth.middleware.AuthenticationMiddleware'
+        ]):
+            self.assertRaises(Exception,
+                              self.client.get,
+                              reverse('opbeat-raise-exc'))
+        self.assertEquals(len(self.opbeat.events), 1)
+        event = self.opbeat.events.pop(0)['errors'][0]
+        assert event['context']['user'] == {}
 
     def test_request_middleware_exception(self):
         with self.settings(MIDDLEWARE_CLASSES=['tests.contrib.django.testapp.middleware.BrokenRequestMiddleware']):
