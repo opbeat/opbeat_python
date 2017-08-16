@@ -596,7 +596,7 @@ class DjangoClientTest(TestCase):
             # this should not raise a DisallowedHost exception
             self.opbeat.capture('Message', message='foo', request=request)
         event = self.opbeat.events.pop(0)['errors'][0]
-        self.assertEqual(event['http']['url'], None)
+        assert event['context']['request']['url'] == {'raw': 'DisallowedHost'}
 
     # This test only applies to Django 1.3+
     def test_request_capture(self):

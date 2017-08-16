@@ -14,7 +14,7 @@ from __future__ import absolute_import
 import logging
 
 import django
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import DisallowedHost
 from django.db import DatabaseError
 from django.http import HttpRequest
 from django.template import TemplateSyntaxError
@@ -109,20 +109,6 @@ class DjangoClient(Client):
 
         environ = request.META
 
-        if hasattr(request, 'get_raw_uri'):
-            # added in Django 1.9
-            url = request.get_raw_uri()
-        else:
-            try:
-                # Requires host to be in ALLOWED_HOSTS, might throw a
-                # DisallowedHost exception
-                url = request.build_absolute_uri()
-            except SuspiciousOperation:
-                # catching SuspiciousOperation, as the more specific
-                # DisallowedHost has only been introduced in Django 1.6.
-                # We can't figure out the real URL, so we have to set it to
-                # None
-                url = None
         result = {
             'body': data,
             'env': dict(get_environ(environ)),
@@ -134,9 +120,21 @@ class DjangoClient(Client):
             },
         }
 
+        if hasattr(request, 'get_raw_uri'):
+            # added in Django 1.9
+            url = request.get_raw_uri()
+        else:
+            try:
+                # Requires host to be in ALLOWED_HOSTS, might throw a
+                # DisallowedHost exception
+                url = request.build_absolute_uri()
+            except DisallowedHost:
+                # We can't figure out the real URL, so we have to set it to
+                # DisallowedHost
+                result['url'] = {'raw': 'DisallowedHost'}
+                url = None
         if url:
             result['url'] = get_url_dict(url)
-
         return result
 
     def capture(self, event_type, request=None, **kwargs):
