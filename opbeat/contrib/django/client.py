@@ -73,7 +73,10 @@ class DjangoClient(Client):
         try:
             user = request.user
             if hasattr(user, 'is_authenticated'):
-                user_info['is_authenticated'] = user.is_authenticated()
+                if callable(user.is_authenticated):
+                    user_info['is_authenticated'] = user.is_authenticated()
+                else:
+                    user_info['is_authenticated'] = bool(user.is_authenticated)
             if hasattr(user, 'id'):
                 user_info['id'] = user.id
             if hasattr(user, 'get_username'):
