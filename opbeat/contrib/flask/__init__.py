@@ -127,7 +127,7 @@ class Opbeat(object):
 
         self.client.capture(
             'Exception', exc_info=kwargs.get('exc_info'),
-            data=get_data_from_request(request),
+            data={'context': {'request': get_data_from_request(request)}},
             extra={
                 'app': self.app,
             },
