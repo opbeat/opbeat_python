@@ -232,14 +232,16 @@ class DjangoClientTest(TestCase):
         with self.settings(INSTALLED_APPS=[
             app for app in settings.INSTALLED_APPS
             if app != 'django.contrib.auth'
+        ]) and self.settings(MIDDLEWARE_CLASSES=[
+            m for m in settings.MIDDLEWARE_CLASSES
+            if m != 'django.contrib.auth.middleware.AuthenticationMiddleware'
         ]):
-            self.assertRaises(Exception,
-                              self.client.get,
-                              reverse('opbeat-raise-exc'))
+            with pytest.raises(Exception):
+                resp = self.client.get(reverse('opbeat-raise-exc'))
 
         self.assertEquals(len(self.opbeat.events), 1)
         event = self.opbeat.events.pop(0)['errors'][0]
-        assert event['context']['user'] == {'id': None, 'is_authenticated': False, 'username': ''}
+        assert event['context']['user'] == {}
 
     def test_user_info_without_auth_middleware(self):
         with self.settings(MIDDLEWARE_CLASSES=[
@@ -426,15 +428,15 @@ class DjangoClientTest(TestCase):
             self.assertEquals(len(self.opbeat.events), 1)
             event = self.opbeat.events.pop(0)['errors'][0]
 
-            self.assertEquals(event['level'], 'info')
-            self.assertEquals(event['logger'], 'http404')
+            self.assertEquals(event['log']['level'], 'info')
+            self.assertEquals(event['log']['logger_name'], 'http404')
 
-            self.assertTrue('http' in event)
-            http = event['http']
-            self.assertEquals(http['url'], u'http://testserver/non-existant-page')
-            self.assertEquals(http['method'], 'GET')
-            self.assertEquals(http['query_string'], '')
-            self.assertEquals(http['data'], None)
+            self.assertTrue('request' in event['context'])
+            request = event['context']['request']
+            self.assertEquals(request['url']['raw'], u'http://testserver/non-existant-page')
+            self.assertEquals(request['method'], 'GET')
+            self.assertEquals(request['url']['search'], '')
+            self.assertEquals(request['body'], None)
 
     def test_404_middleware_with_debug(self):
         with self.settings(
