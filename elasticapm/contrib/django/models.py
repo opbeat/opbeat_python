@@ -1,5 +1,5 @@
 """
-opbeat.contrib.django.models
+elasticapm.contrib.django.models
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Acts as an implicit hook for Django installs.
@@ -148,7 +148,7 @@ def get_client_config():
 
 def get_client(client=None):
     """
-    Get an Opbeat client.
+    Get an ElasticAPM client.
 
     :param client:
     :return:
@@ -170,7 +170,7 @@ def get_client(client=None):
     return _client[1]
 
 
-def opbeat_exception_handler(request=None, **kwargs):
+def exception_handler(request=None, **kwargs):
     def actually_do_stuff(request=None, **kwargs):
         exc_info = sys.exc_info()
         try:
@@ -203,7 +203,7 @@ def register_handlers():
     from django.core.signals import got_request_exception
 
     # Connect to Django's internal signal handler
-    got_request_exception.connect(opbeat_exception_handler)
+    got_request_exception.connect(exception_handler)
 
     # If Celery is installed, register a signal handler
     if 'djcelery' in django_settings.INSTALLED_APPS:
