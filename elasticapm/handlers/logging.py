@@ -56,7 +56,7 @@ class LoggingHandler(logging.Handler, object):
             return self._emit(record)
         except Exception:
             six.print_(
-                "Top level Opbeat exception caught - "
+                "Top level ElasticAPM exception caught - "
                 "failed creating log record",
                 sys.stderr)
             six.print_(to_string(record.msg), sys.stderr)

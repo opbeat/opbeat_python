@@ -4,7 +4,7 @@ pytest.importorskip("flask")  # isort:skip
 import mock
 from flask import Flask, render_template, signals
 
-from elasticapm.contrib.flask import Opbeat
+from elasticapm.contrib.flask import ElasticAPM
 from tests.helpers import get_tempstoreclient
 from tests.utils.compat import TestCase
 
@@ -30,7 +30,7 @@ class FlaskTest(TestCase):
         self.client = self.app.test_client()
 
         self.opbeat_client = get_tempstoreclient()
-        self.opbeat = Opbeat(self.app, client=self.opbeat_client)
+        self.opbeat = ElasticAPM(self.app, client=self.opbeat_client)
 
     def tearDown(self):
         signals.request_started.disconnect(self.opbeat.request_started)
@@ -164,6 +164,6 @@ class FlaskTest(TestCase):
         assert traces[0]['type'] == 'transaction'
 
     def test_framework_version(self):
-        opbeat = Opbeat(app=self.app)
+        opbeat = ElasticAPM(app=self.app)
         app_info = opbeat.client.get_app_info()
         assert 'flask' == app_info['framework']['name']

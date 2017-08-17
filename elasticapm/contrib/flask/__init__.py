@@ -31,15 +31,15 @@ logger = logging.getLogger('elasticapm.errors.client')
 
 
 def make_client(client_cls, app, app_name=None, secret_token=None):
-    opbeat_config = app.config.get('ELASTICAPM', {})
+    config = app.config.get('ELASTICAPM', {})
     app_name = (
         app_name or
-        opbeat_config.get('APP_NAME') or  # config
+        config.get('APP_NAME') or  # config
         os.environ.get('ELASTICAPM_APP_NAME') # environment
     )
     secret_token = (
         secret_token or
-        opbeat_config.get('SECRET_TOKEN') or  # config
+        config.get('SECRET_TOKEN') or  # config
         os.environ.get('ELASTICAPM_SECRET_TOKEN') # environment
     )
     if hasattr(flask, '__version__'):
@@ -50,20 +50,20 @@ def make_client(client_cls, app, app_name=None, secret_token=None):
     client = client_cls(
         app_name=app_name,
         secret_token=secret_token,
-        include_paths=set(opbeat_config.get('INCLUDE_PATHS', [])) | set([app.import_name]),
-        exclude_paths=opbeat_config.get('EXCLUDE_PATHS'),
-        filter_exception_types=opbeat_config.get('FILTER_EXCEPTION_TYPES', None),
-        servers=opbeat_config.get('SERVERS'),
-        transport_class=opbeat_config.get('TRANSPORT_CLASS', None),
-        hostname=opbeat_config.get('HOSTNAME'),
-        auto_log_stacks=opbeat_config.get('AUTO_LOG_STACKS'),
-        timeout=opbeat_config.get('TIMEOUT'),
-        string_max_length=opbeat_config.get('STRING_MAX_LENGTH'),
-        list_max_length=opbeat_config.get('LIST_MAX_LENGTH'),
-        traces_freq_send=opbeat_config.get('TRACES_FREQ_SEND'),
-        processors=opbeat_config.get('PROCESSORS'),
-        async_mode=opbeat_config.get('ASYNC_MODE'),
-        transactions_ignore_patterns=opbeat_config.get('TRANSACTIONS_IGNORE_PATTERNS'),
+        include_paths=set(config.get('INCLUDE_PATHS', [])) | set([app.import_name]),
+        exclude_paths=config.get('EXCLUDE_PATHS'),
+        filter_exception_types=config.get('FILTER_EXCEPTION_TYPES', None),
+        servers=config.get('SERVERS'),
+        transport_class=config.get('TRANSPORT_CLASS', None),
+        hostname=config.get('HOSTNAME'),
+        auto_log_stacks=config.get('AUTO_LOG_STACKS'),
+        timeout=config.get('TIMEOUT'),
+        string_max_length=config.get('STRING_MAX_LENGTH'),
+        list_max_length=config.get('LIST_MAX_LENGTH'),
+        traces_freq_send=config.get('TRACES_FREQ_SEND'),
+        processors=config.get('PROCESSORS'),
+        async_mode=config.get('ASYNC_MODE'),
+        transactions_ignore_patterns=config.get('TRANSACTIONS_IGNORE_PATTERNS'),
     )
 
     client._framework = 'flask'
@@ -71,26 +71,26 @@ def make_client(client_cls, app, app_name=None, secret_token=None):
     return client
 
 
-class Opbeat(object):
+class ElasticAPM(object):
     """
-    Flask application for Opbeat.
+    Flask application for Elastic APM.
 
     Look up configuration from ``os.environ.get('ELASTICAPM_APP_NAME')`` and
     ``os.environ.get('ELASTICAPM_SECRET_TOKEN')``::
 
-    >>> elasticapm = Opbeat(app)
+    >>> elasticapm = ElasticAPM(app)
 
     Pass an arbitrary APP_NAME and SECRET_TOKEN::
 
-    >>> elasticapm = Opbeat(app, app_name='myapp', secret_token='asdasdasd')
+    >>> elasticapm = ElasticAPM(app, app_name='myapp', secret_token='asdasdasd')
 
     Pass an explicit client::
 
-    >>> elasticapm = Opbeat(app, client=client)
+    >>> elasticapm = ElasticAPM(app, client=client)
 
     Automatically configure logging::
 
-    >>> elasticapm = Opbeat(app, logging=True)
+    >>> elasticapm = ElasticAPM(app, logging=True)
 
     Capture an exception::
 
