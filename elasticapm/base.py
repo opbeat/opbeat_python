@@ -77,7 +77,7 @@ class Client(object):
     HTTP API to Opbeat servers.
 
     Will read default configuration from the environment variable
-    ``OPBEAT_APP_NAME`` and ``OPBEAT_SECRET_TOKEN``
+    ``ELASTICAPM_APP_NAME`` and ``ELASTICAPM_SECRET_TOKEN``
     if available. ::
 
     >>> from elasticapm import Client
@@ -103,10 +103,10 @@ class Client(object):
     protocol_version = '1.0'
 
     environment_config_map = {
-        'app_name': 'OPBEAT_APP_NAME',
-        'secret_token': 'OPBEAT_SECRET_TOKEN',
-        'git_ref': 'OPBEAT_GIT_REF',
-        'app_version': 'OPBEAT_APP_VERSION',
+        'app_name': 'ELASTICAPM_APP_NAME',
+        'secret_token': 'ELASTICAPM_SECRET_TOKEN',
+        'git_ref': 'ELASTICAPM_GIT_REF',
+        'app_version': 'ELASTICAPM_APP_VERSION',
     }
 
     def __init__(self, app_name=None, secret_token=None,
@@ -143,11 +143,11 @@ class Client(object):
             self.logger.info(msg)
 
         self.is_send_disabled = (
-            os.environ.get('OPBEAT_DISABLE_SEND', '').lower() in ('1', 'true')
+            os.environ.get('ELASTICAPM_DISABLE_SEND', '').lower() in ('1', 'true')
         )
         if self.is_send_disabled:
             self.logger.info(
-                'Not sending any data to Opbeat due to OPBEAT_DISABLE_SEND '
+                'Not sending any data to Opbeat due to ELASTICAPM_DISABLE_SEND '
                 'environment variable'
             )
 

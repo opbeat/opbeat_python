@@ -44,7 +44,7 @@ except ImportError:
     has_with_eager_tasks = False
 
 
-settings.OPBEAT = {'CLIENT': 'tests.contrib.django.django_tests.TempStoreClient'}
+settings.ELASTICAPM = {'CLIENT': 'tests.contrib.django.django_tests.TempStoreClient'}
 
 
 class MockClientHandler(_TestClientHandler):
@@ -78,9 +78,9 @@ class ClientProxyTest(TestCase):
             'ORGANIZATION_ID': 'org',
             'SECRET_TOKEN': '99'
         }
-        config.update(settings.OPBEAT)
+        config.update(settings.ELASTICAPM)
         event_count = len(client.events)
-        with self.settings(OPBEAT=config):
+        with self.settings(ELASTICAPM=config):
             client.capture('Message', message='foo')
             self.assertEquals(len(client.events), event_count + 1)
             client.events.pop(0)
@@ -145,7 +145,7 @@ class DjangoClientTest(TestCase):
     def test_view_exception_opbeat_debug(self):
         with self.settings(
             DEBUG=True,
-            OPBEAT={
+            ELASTICAPM={
                 'DEBUG': True,
                 'CLIENT': 'tests.contrib.django.django_tests.TempStoreClient'
             },
@@ -829,7 +829,7 @@ class DjangoClientTest(TestCase):
             'SECRET_TOKEN': '1',
             'ASYNC': True,
         }
-        with self.settings(OPBEAT=config):
+        with self.settings(ELASTICAPM=config):
             pytest.deprecated_call(get_client_config)
 
     def test_request_metrics_name_override(self):
@@ -1201,7 +1201,7 @@ class DjangoManagementCommandTest(TestCase):
 
     def test_settings_missing(self):
         stdout = six.StringIO()
-        with self.settings(OPBEAT={}):
+        with self.settings(ELASTICAPM={}):
             call_command('elasticapm', 'check', stdout=stdout)
         output = stdout.getvalue()
         assert 'Configuration errors detected' in output

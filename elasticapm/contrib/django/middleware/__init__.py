@@ -1,5 +1,5 @@
 """
-opbeat.contrib.django.middleware
+elasticapm.contrib.django.middleware
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat
@@ -47,7 +47,7 @@ class Catch404Middleware(MiddlewareMixin):
                 _is_ignorable_404(request.get_full_path())):
             return response
         if disabled_due_to_debug(
-                    getattr(django_settings, 'OPBEAT', {}),
+                    getattr(django_settings, 'ELASTICAPM', {}),
                     django_settings.DEBUG
                 ):
             return response
@@ -150,7 +150,7 @@ class TracingMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
         if not disabled_due_to_debug(
-            getattr(django_settings, 'OPBEAT', {}),
+            getattr(django_settings, 'ELASTICAPM', {}),
             django_settings.DEBUG
         ):
             self.client.begin_transaction("request")

@@ -31,16 +31,16 @@ logger = logging.getLogger('elasticapm.errors.client')
 
 
 def make_client(client_cls, app, app_name=None, secret_token=None):
-    opbeat_config = app.config.get('OPBEAT', {})
+    opbeat_config = app.config.get('ELASTICAPM', {})
     app_name = (
         app_name or
         opbeat_config.get('APP_NAME') or  # config
-        os.environ.get('OPBEAT_APP_NAME') # environment
+        os.environ.get('ELASTICAPM_APP_NAME') # environment
     )
     secret_token = (
         secret_token or
         opbeat_config.get('SECRET_TOKEN') or  # config
-        os.environ.get('OPBEAT_SECRET_TOKEN') # environment
+        os.environ.get('ELASTICAPM_SECRET_TOKEN') # environment
     )
     if hasattr(flask, '__version__'):
         framework_version = 'flask/' + flask.__version__
@@ -75,8 +75,8 @@ class Opbeat(object):
     """
     Flask application for Opbeat.
 
-    Look up configuration from ``os.environ.get('OPBEAT_APP_NAME')`` and
-    ``os.environ.get('OPBEAT_SECRET_TOKEN')``::
+    Look up configuration from ``os.environ.get('ELASTICAPM_APP_NAME')`` and
+    ``os.environ.get('ELASTICAPM_SECRET_TOKEN')``::
 
     >>> elasticapm = Opbeat(app)
 
@@ -120,7 +120,7 @@ class Opbeat(object):
             return
 
         if disabled_due_to_debug(
-            self.app.config.get('OPBEAT', {}),
+            self.app.config.get('ELASTICAPM', {}),
             self.app.config.get('DEBUG', False)
         ):
             return

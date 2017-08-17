@@ -116,7 +116,7 @@ def get_client_class(client_path=default_client_class):
 
 
 def get_client_config():
-    config = getattr(django_settings, 'OPBEAT', {})
+    config = getattr(django_settings, 'ELASTICAPM', {})
     if 'ASYNC' in config:
         warnings.warn(
             'Usage of "ASYNC" configuration is deprecated. Use "ASYNC_MODE"',
@@ -158,7 +158,7 @@ def get_client(client=None):
 
     tmp_client = client is not None
     if not tmp_client:
-        config = getattr(django_settings, 'OPBEAT', {})
+        config = getattr(django_settings, 'ELASTICAPM', {})
         client = config.get('CLIENT', default_client_class)
 
     if _client[0] != client:
@@ -176,7 +176,7 @@ def exception_handler(request=None, **kwargs):
         try:
             if (
                 disabled_due_to_debug(
-                    getattr(django_settings, 'OPBEAT', {}),
+                    getattr(django_settings, 'ELASTICAPM', {}),
                     django_settings.DEBUG
                 )
                 or getattr(exc_info[1], 'skip_opbeat', False)

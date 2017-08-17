@@ -76,7 +76,7 @@ CONFIG_EXAMPLE = """
 
 You can set it in your settings file:
 
-    OPBEAT = {
+    ELASTICAPM = {
         'ORGANIZATION_ID': '<YOUR-ORGANIZATION-ID>',
         'APP_ID': '<YOUR-APP-ID>',
         'SECRET_TOKEN': '<YOUR-SECRET-TOKEN>',
@@ -84,9 +84,8 @@ You can set it in your settings file:
 
 or with environment variables:
 
-    $ export OPBEAT_ORGANIZATION_ID="<YOUR-ORGANIZATION-ID>"
-    $ export OPBEAT_APP_ID="<YOUR-APP-ID>"
-    $ export OPBEAT_SECRET_TOKEN="<YOUR-SECRET-TOKEN>"
+    $ export ELASTICAPM_APP_ID="<YOUR-APP-ID>"
+    $ export ELASTICAPM_SECRET_TOKEN="<YOUR-SECRET-TOKEN>"
     $ python manage.py elasticapm check
 
 """
@@ -198,18 +197,18 @@ class Command(BaseCommand):
 
         # check if we're disabled due to DEBUG:
         if settings.DEBUG:
-            if getattr(settings, 'OPBEAT', {}).get('DEBUG'):
+            if getattr(settings, 'ELASTICAPM', {}).get('DEBUG'):
                 self.write(
                     'Note: even though you are running in DEBUG mode, we will '
-                    'send data to Opbeat, because you set OPBEAT["DEBUG"] to '
+                    'send data to Opbeat, because you set ELASTICAPM["DEBUG"] to '
                     'True. You can disable Opbeat while in DEBUG mode like this'
                     '\n\n',
                     yellow
                 )
                 self.write(
-                    '   OPBEAT = {\n'
+                    '   ELASTICAPM = {\n'
                     '       "DEBUG": False,\n'
-                    '       # your other OPBEAT settings\n'
+                    '       # your other ELASTICAPM settings\n'
                     '   }'
 
                 )
@@ -222,10 +221,10 @@ class Command(BaseCommand):
                 self.write(
                     'If you want to test Opbeat while DEBUG is set to True, you'
                     ' can force Opbeat to gather data by setting'
-                    ' OPBEAT["DEBUG"] to True, like this\n\n'
-                    '   OPBEAT = {\n'
+                    ' ELASTICAPM["DEBUG"] to True, like this\n\n'
+                    '   ELASTICAPM = {\n'
                     '       "DEBUG": True,\n'
-                    '       # your other OPBEAT settings\n'
+                    '       # your other ELASTICAPM settings\n'
                     '   }'
                 )
                 passed = False
