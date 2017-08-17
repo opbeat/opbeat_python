@@ -82,7 +82,7 @@ def process_request_wrapper(wrapped, instance, args, kwargs):
     try:
         if response is not None:
             request = args[0]
-            request._opbeat_transaction_name = get_name_from_middleware(
+            request._elasticapm_transaction_name = get_name_from_middleware(
                 wrapped, instance
             )
     finally:
@@ -96,9 +96,9 @@ def process_response_wrapper(wrapped, instance, args, kwargs):
         # if there's no view_func on the request, and this middleware created
         # a new response object, it's logged as the responsible transaction
         # name
-        if (not hasattr(request, '_opbeat_view_func')
+        if (not hasattr(request, '_elasticapm_view_func')
                 and response is not original_response):
-            request._opbeat_transaction_name = get_name_from_middleware(
+            request._elasticapm_transaction_name = get_name_from_middleware(
                 wrapped, instance
             )
     finally:
@@ -156,17 +156,17 @@ class TracingMiddleware(MiddlewareMixin):
             self.client.begin_transaction("request")
 
     def process_view(self, request, view_func, view_args, view_kwargs):
-        request._opbeat_view_func = view_func
+        request._elasticapm_view_func = view_func
 
     def process_response(self, request, response):
         try:
             if hasattr(response, 'status_code'):
-                # check if _opbeat_transaction_name is set
-                if hasattr(request, '_opbeat_transaction_name'):
-                    transaction_name = request._opbeat_transaction_name
-                elif getattr(request, '_opbeat_view_func', False):
+                # check if _elasticapm_transaction_name is set
+                if hasattr(request, '_elasticapm_transaction_name'):
+                    transaction_name = request._elasticapm_transaction_name
+                elif getattr(request, '_elasticapm_view_func', False):
                     transaction_name = get_name_from_func(
-                        request._opbeat_view_func
+                        request._elasticapm_view_func
                     )
                 else:
                     transaction_name = ''
