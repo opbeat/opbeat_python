@@ -26,7 +26,7 @@ import elasticapm
 from elasticapm.conf import defaults
 from elasticapm.traces import TransactionsStore, get_transaction
 from elasticapm.transport.base import TransportException
-from elasticapm.utils import opbeat_json as json
+from elasticapm.utils import json_encoder as json
 from elasticapm.utils import is_master_process, six, stacks, varmap
 from elasticapm.utils.compat import atexit_register, urlparse
 from elasticapm.utils.deprecation import deprecated

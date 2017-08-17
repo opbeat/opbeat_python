@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import datetime
 import uuid
 
-from elasticapm.utils import opbeat_json as json
+from elasticapm.utils import json_encoder as json
 from elasticapm.utils import six
 from tests.utils.compat import TestCase
 

@@ -1,5 +1,5 @@
 """
-opbeat.utils.json
+elasticapm.utils.json_encoder
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat
