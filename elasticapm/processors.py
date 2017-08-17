@@ -1,8 +1,8 @@
 """
-opbeat.core.processors
+elasticapm.core.processors
 ~~~~~~~~~~~~~~~~~~~~~
 
-:copyright: (c) 2011-2012 Opbeat
+:copyright: (c) 2011-2017 Elasticsearch
 
 Large portions are
 :copyright: (c) 2010 by the Sentry Team, see AUTHORS for more details.
@@ -35,7 +35,7 @@ def remove_http_request_body(client, event):
     """
     Removes request.body from context
 
-    :param client: an Opbeat client
+    :param client: an ElasticAPM client
     :param event: a transaction or error event
     :return: The modified event
     """
@@ -48,7 +48,7 @@ def remove_stacktrace_locals(client, event):
     """
     Removes local variables from any frames.
 
-    :param client: an Opbeat client
+    :param client: an ElasticAPM client
     :param event: a transaction or error event
     :return: The modified event
     """
@@ -60,7 +60,7 @@ def sanitize_stacktrace_locals(client, event):
     """
     Sanitizes local variables in all frames
 
-    :param client: an Opbeat client
+    :param client: an ElasticAPM client
     :param event: a transaction or error event
     :return: The modified event
     """
@@ -75,7 +75,7 @@ def sanitize_http_request_cookies(client, event):
     """
     Sanitizes http request cookies
 
-    :param client: an Opbeat client
+    :param client: an ElasticAPM client
     :param event: a transaction or error event
     :return: The modified event
     """
@@ -91,7 +91,7 @@ def sanitize_http_request_headers(client, event):
     """
     Sanitizes http request headers
 
-    :param client: an Opbeat client
+    :param client: an ElasticAPM client
     :param event: a transaction or error event
     :return: The modified event
     """
@@ -107,7 +107,7 @@ def sanitize_http_wsgi_env(client, event):
     """
     Sanitizes WSGI environment variables
 
-    :param client: an Opbeat client
+    :param client: an ElasticAPM client
     :param event: a transaction or error event
     :return: The modified event
     """
@@ -123,7 +123,7 @@ def sanitize_http_request_querystring(client, event):
     """
     Sanitizes http request query string
 
-    :param client: an Opbeat client
+    :param client: an ElasticAPM client
     :param event: a transaction or error event
     :return: The modified event
     """
@@ -151,7 +151,7 @@ def sanitize_http_request_body(client, event):
     is a query-encoded string. Other types (e.g. JSON) are not handled by
     this sanitizer.
 
-    :param client: an Opbeat client
+    :param client: an ElasticAPM client
     :param event: a transaction or error event
     :return: The modified event
     """

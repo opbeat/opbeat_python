@@ -1,8 +1,8 @@
 """
-opbeat.conf
+elasticapm.conf
 ~~~~~~~~~~
 
-:copyright: (c) 2011-2012 Opbeat
+:copyright: (c) 2011-2017 Elasticsearch
 
 Large portions are
 :copyright: (c) 2010 by the Sentry Team, see AUTHORS for more details.
@@ -19,19 +19,19 @@ def setup_logging(handler, exclude=['elasticapm',
                                     'south',
                                     'elasticapm.errors']):
     """
-    Configures logging to pipe to Opbeat.
+    Configures logging to pipe to Elastic APM.
 
-    - ``exclude`` is a list of loggers that shouldn't go to Opbeat.
+    - ``exclude`` is a list of loggers that shouldn't go to ElasticAPM.
 
     For a typical Python install:
 
     >>> from elasticapm.handlers.logging import LoggingHandler
-    >>> client = Opbeat(...)
+    >>> client = ElasticAPM(...)
     >>> setup_logging(LoggingHandler(client))
 
     Within Django:
 
-    >>> from elasticapm.contrib.django.logging import LoggingHandler
+    >>> from elasticapm.contrib.django.handlers import LoggingHandler
     >>> setup_logging(LoggingHandler())
 
     Returns a boolean based on if logging was configured or not.

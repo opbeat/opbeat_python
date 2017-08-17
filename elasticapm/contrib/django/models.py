@@ -4,7 +4,7 @@ elasticapm.contrib.django.models
 
 Acts as an implicit hook for Django installs.
 
-:copyright: (c) 2011-2012 Opbeat
+:copyright: (c) 2011-2017 Elasticsearch
 
 Large portions are
 :copyright: (c) 2010 by the Sentry Team, see AUTHORS for more details.

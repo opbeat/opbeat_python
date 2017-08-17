@@ -1,10 +1,10 @@
 """
-opbeat.conf.defaults
+elasticapm.conf.defaults
 ~~~~~~~~~~~~~~~~~~~
 
-Represents the default values for all Opbeat settings.
+Represents the default values for all ElasticAPM settings.
 
-:copyright: (c) 2011-2012 Opbeat
+:copyright: (c) 2011-2017 Elasticsearch
 
 Large portions are
 :copyright: (c) 2010 by the Sentry Team, see AUTHORS for more details.
@@ -17,11 +17,11 @@ import socket
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), os.pardir))
 
-# Allow local testing of Opbeat even if DEBUG is enabled
+# Allow local testing of ElasticAPM even if DEBUG is enabled
 DEBUG = False
 
-# This should be the schema+host of the Opbeat server
-SERVERS = ['https://intake.opbeat.com']
+# This should be the schema+host of the APM Server server
+SERVERS = ['http://localhost:8080']
 
 # Error API path
 ERROR_API_PATH = '/v1/errors/'
@@ -36,14 +36,14 @@ CLIENT = 'elasticapm.contrib.django.DjangoClient'
 
 HOSTNAME = socket.gethostname()
 
-# Credentials to authenticate with the Opbeat server
+# Credentials to authenticate with the APM Server server
 ACCESS_TOKEN = None
 
 # Extending this allow you to ignore module prefixes when we attempt to
 # discover which function an error comes from (typically a view)
 EXCLUDE_PATHS = []
 
-# By default Opbeat only looks at modules in INSTALLED_APPS for drilling down
+# By default ElasticAPM only looks at modules in INSTALLED_APPS for drilling down
 # where an exception is located
 INCLUDE_PATHS = []
 
@@ -76,7 +76,7 @@ PROCESSORS = (
 # How often we send data to the metrics backend
 TRACES_SEND_FREQ_SECS = 60
 
-# Should data be sent to Opbeat asynchronously in a separate thread
+# Should data be sent to the APM Server asynchronously in a separate thread
 ASYNC_MODE = True
 
 # Should elasticapm wrap middleware for better metrics detection

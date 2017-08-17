@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """
-opbeat
+elasticapm
 ======
 
-opbeat is a Python client for `Opbeat <https://elasticapm.com/>`_. It provides
+elastic-apm is a Python client for `Elastic APM <https://elastic.co/apm>`_. It provides
 full out-of-the-box support for many of the popular frameworks, including
 `Django <djangoproject.com>`_, `Flask <http://flask.pocoo.org/>`_, and `Pylons
-<http://www.pylonsproject.org/>`_. opbeat also includes drop-in support for any
+<http://www.pylonsproject.org/>`_. elastic-apm also includes drop-in support for any
 `WSGI <http://wsgi.readthedocs.org/>`_-compatible web application.
 """
 
@@ -145,12 +145,12 @@ class PyTest(TestCommand):
 
 
 setup_kwargs = dict(
-    name='elasticapm',
+    name='elastic-apm',
     version=VERSION,
-    author='Opbeat, Inc',
+    author='Elastic, Inc',
     author_email='support@opbeat.com',
-    url='https://github.com/opbeat/opbeat_python',
-    description='The official Python module for Opbeat.com',
+    url='https://github.com/elastic/apm-agent-python',
+    description='The official Python module for Elastic APM',
     long_description=open(os.path.join(os.path.dirname(__file__), 'README.rst'), encoding='utf-8').read(),
     packages=find_packages(exclude=("tests",)),
     zip_safe=False,

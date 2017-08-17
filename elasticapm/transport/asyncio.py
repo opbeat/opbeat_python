@@ -2,6 +2,8 @@ import asyncio
 
 import aiohttp
 
+from elasticapm.conf import defaults
+
 from .base import TransportException
 from .http import HTTPTransport
 
@@ -32,7 +34,7 @@ class AsyncioHTTPTransport(HTTPTransport):
                     assert response.status == 202
         except asyncio.TimeoutError as e:
             print_trace = True
-            message = ("Connection to Opbeat server timed out "
+            message = ("Connection to APM Server timed out "
                        "(url: %s, timeout: %d seconds)" % (self._url, timeout))
             raise TransportException(message, data,
                                      print_trace=print_trace) from e
@@ -43,13 +45,13 @@ class AsyncioHTTPTransport(HTTPTransport):
                 message = 'Temporarily rate limited: '
                 print_trace = False
             else:
-                message = 'Unable to reach Opbeat server: '
+                message = 'Unable to reach APM Server: '
             message += '%s (url: %s, body: %s)' % (e, self._url, body)
             raise TransportException(message, data,
                                      print_trace=print_trace) from e
         except Exception as e:
             print_trace = True
-            message = 'Unable to reach Opbeat server: %s (url: %s)' % (
+            message = 'Unable to reach APM Server: %s (url: %s)' % (
                 e, self._url)
             raise TransportException(message, data,
                                      print_trace=print_trace) from e

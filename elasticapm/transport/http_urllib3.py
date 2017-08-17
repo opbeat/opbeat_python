@@ -40,12 +40,12 @@ class Urllib3Transport(HTTPTransport):
                 print_trace = True
                 if isinstance(e, MaxRetryError) and isinstance(e.reason, TimeoutError):
                     message = (
-                        "Connection to Opbeat server timed out "
+                        "Connection to APM Server timed out "
                         "(url: %s, timeout: %d seconds)" % (self._url, timeout)
                     )
                     print_trace = False
                 else:
-                    message = 'Unable to reach Opbeat server: %s (url: %s)' % (
+                    message = 'Unable to reach APM Server: %s (url: %s)' % (
                         e, self._url
                     )
                 raise TransportException(message, data, print_trace=print_trace)

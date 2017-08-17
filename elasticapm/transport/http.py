@@ -30,7 +30,7 @@ class HTTPTransport(Transport):
         """
         Sends a request to a remote webserver using HTTP POST.
 
-        Returns the shortcut URL of the recorded error on Opbeat
+        Returns the shortcut URL of the recorded error on Elastic APM
         """
         req = Request(self._url, headers=headers)
         if timeout is None:
@@ -45,7 +45,7 @@ class HTTPTransport(Transport):
             print_trace = True
             if isinstance(e, socket.timeout):
                 message = (
-                    "Connection to Opbeat server timed out "
+                    "Connection to APM Server timed out "
                     "(url: %s, timeout: %d seconds)" % (self._url, timeout)
                 )
             elif isinstance(e, HTTPError):
@@ -54,10 +54,10 @@ class HTTPTransport(Transport):
                     message = 'Temporarily rate limited: '
                     print_trace = False
                 else:
-                    message = 'Unable to reach Opbeat server: '
+                    message = 'Unable to reach APM Server: '
                 message += '%s (url: %s, body: %s)' % (e, self._url, body)
             else:
-                message = 'Unable to reach Opbeat server: %s (url: %s)' % (
+                message = 'Unable to reach APM Server: %s (url: %s)' % (
                     e, self._url
                 )
             raise TransportException(message, data, print_trace=print_trace)

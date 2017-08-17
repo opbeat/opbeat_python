@@ -85,4 +85,4 @@ async def test_send_timeout(mock_client):
 
     with pytest.raises(TransportException) as excinfo:
         await transport.send(b'data', {}, timeout=0.0001)
-    assert 'Connection to Opbeat server timed out' in str(excinfo.value)
+    assert 'Connection to APM Server timed out' in str(excinfo.value)

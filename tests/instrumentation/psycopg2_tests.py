@@ -20,7 +20,7 @@ travis_and_psycopg2 = 'TRAVIS' not in os.environ or not has_psycopg2
 @pytest.yield_fixture(scope='function')
 def postgres_connection(request):
     conn = psycopg2.connect(
-        database=os.environ.get('POSTGRES_DB', 'opbeat_test'),
+        database=os.environ.get('POSTGRES_DB', 'elasticapm_test'),
         user=os.environ.get('POSTGRES_USER', 'postgres'),
         host=os.environ.get('POSTGRES_HOST', None),
         port=os.environ.get('POSTGRES_PORT', None),

@@ -71,7 +71,7 @@ async def test_client_failure_stdlib_exception(mocker):
     from elasticapm.transport.base import TransportException
 
     client = Client(
-        servers=['http://opbeat'],
+        servers=['http://elastic.co'],
         app_name='app_name',
         secret_token='secret',
         async_mode=False,
@@ -79,7 +79,7 @@ async def test_client_failure_stdlib_exception(mocker):
     )
     mock_client = mocker.Mock()
     mock_client.post = mocker.Mock(side_effect=RuntimeError('oops'))
-    transport = client._get_transport(urlparse('http://opbeat'))
+    transport = client._get_transport(urlparse('http://elastic.co'))
     transport.client = mock_client
     client.send(foo='bar')
     tasks = asyncio.Task.all_tasks()

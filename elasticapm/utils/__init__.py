@@ -1,8 +1,8 @@
 """
-opbeat.utils
+elasticapm.utils
 ~~~~~~~~~~~~~~~~~~~
 
-:copyright: (c) 2011-2015 Opbeat
+:copyright: (c) 2011-2017 Elasticsearch
 
 Large portions are
 :copyright: (c) 2010 by the Sentry Team, see AUTHORS for more details.
@@ -50,7 +50,7 @@ def varmap(func, var, context=None, name=None):
 
 def disabled_due_to_debug(config, debug):
     """
-    Compares module and app configs to determine whether to log to Opbeat
+    Compares module and app configs to determine whether to log to ElasticAPM
     :param config: Dictionary containing module config
     :param debug: Boolean denoting app DEBUG state
     :return: Boolean True if logging is disabled

@@ -2,7 +2,7 @@
 elasticapm.contrib.django.middleware
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:copyright: (c) 2011-2012 Opbeat
+:copyright: (c) 2011-2017 Elasticsearch
 
 Large portions are
 :copyright: (c) 2010 by the Sentry Team, see AUTHORS for more details.
@@ -196,7 +196,7 @@ class TracingMiddleware(MiddlewareMixin):
 class ErrorIdMiddleware(MiddlewareMixin):
     """
     Appends the X-ElasticAPM-ErrorId response header for referencing a message within
-    the Opbeat datastore.
+    the ElasticAPM datastore.
     """
     def process_response(self, request, response):
         if not getattr(request, '_elasticapm', None):

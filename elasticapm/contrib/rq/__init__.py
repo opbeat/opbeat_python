@@ -5,7 +5,7 @@ def register_elasticapm(client, worker):
     E.g.:
 
     from elasticapm.contrib.django.models import client
-    from elasticapm.contrib.rq import register_opbeat
+    from elasticapm.contrib.rq import register_elasticapm
     
     worker = Worker(map(Queue, listen))
     register_elasticapm(client, worker)

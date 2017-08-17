@@ -1,8 +1,8 @@
 """
-opbeat.base
+elasticapm.base
 ~~~~~~~~~~
 
-:copyright: (c) 2011-2012 Opbeat
+:copyright: (c) 2011-2017 Elasticsearch
 
 Large portions are
 :copyright: (c) 2010 by the Sentry Team, see AUTHORS for more details.
@@ -73,8 +73,8 @@ class ClientState(object):
 
 class Client(object):
     """
-    The base opbeat client, which handles communication over the
-    HTTP API to Opbeat servers.
+    The base ElasticAPM client, which handles communication over the
+    HTTP API to the APM Server.
 
     Will read default configuration from the environment variable
     ``ELASTICAPM_APP_NAME`` and ``ELASTICAPM_SECRET_TOKEN``
@@ -139,7 +139,7 @@ class Client(object):
 
         # servers may be set to a NoneType (for Django)
         if self.servers and not (self.app_name and self.secret_token):
-            msg = 'Missing configuration for Opbeat client. Please see documentation.'
+            msg = 'Missing configuration for ElasticAPM client. Please see documentation.'
             self.logger.info(msg)
 
         self.is_send_disabled = (
@@ -147,7 +147,7 @@ class Client(object):
         )
         if self.is_send_disabled:
             self.logger.info(
-                'Not sending any data to Opbeat due to ELASTICAPM_DISABLE_SEND '
+                'Not sending any data to APM Server due to ELASTICAPM_DISABLE_SEND '
                 'environment variable'
             )
 

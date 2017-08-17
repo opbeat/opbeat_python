@@ -21,7 +21,7 @@ has_unsupported_pypy = (hasattr(sys, 'pypy_version_info')
 
 class ZeroRPCTest(TestCase):
     def setUp(self):
-        self._socket_dir = tempfile.mkdtemp(prefix='opbeatzerorpcunittest')
+        self._socket_dir = tempfile.mkdtemp(prefix='elasticapmzerorpcunittest')
         self._server_endpoint = 'ipc://{0}'.format(os.path.join(
                     self._socket_dir, 'random_zeroserver'
         ))
