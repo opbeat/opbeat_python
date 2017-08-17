@@ -1,5 +1,5 @@
 """
-opbeat.handlers.logbook
+elasticapm.handlers.logbook
 ~~~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat
@@ -29,7 +29,7 @@ LOOKBOOK_LEVELS = {
 }
 
 
-class OpbeatHandler(logbook.Handler):
+class LogbookHandler(logbook.Handler):
     def __init__(self, *args, **kwargs):
         if len(args) == 1:
             arg = args[0]
@@ -50,8 +50,8 @@ class OpbeatHandler(logbook.Handler):
                 self.client = kwargs.pop('client')
             except KeyError:
                 raise TypeError(
-                    'Expected keyword argument for OpbeatHandler: client')
-        super(OpbeatHandler, self).__init__(*args, **kwargs)
+                    'Expected keyword argument for LoggingHandler: client')
+        super(LogbookHandler, self).__init__(*args, **kwargs)
 
     def emit(self, record):
         self.format(record)

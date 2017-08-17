@@ -1,6 +1,6 @@
 import logging
 
-from elasticapm.handlers.logging import OpbeatHandler
+from elasticapm.handlers.logging import LoggingHandler
 from elasticapm.utils.stacks import iter_stack_frames
 from tests.helpers import get_tempstoreclient
 from tests.utils.compat import TestCase
@@ -9,7 +9,7 @@ from tests.utils.compat import TestCase
 class LoggingIntegrationTest(TestCase):
     def setUp(self):
         self.client = get_tempstoreclient(include_paths=['tests', 'elasticapm'])
-        self.handler = OpbeatHandler(self.client)
+        self.handler = LoggingHandler(self.client)
         self.logger = logging.getLogger(__name__)
         self.logger.handlers = []
         self.logger.addHandler(self.handler)
@@ -144,13 +144,13 @@ class LoggingIntegrationTest(TestCase):
 class LoggingHandlerTest(TestCase):
     def test_client_arg(self):
         client = get_tempstoreclient(include_paths=['tests'])
-        handler = OpbeatHandler(client)
+        handler = LoggingHandler(client)
         self.assertEquals(handler.client, client)
 
     def test_client_kwarg(self):
         client = get_tempstoreclient(include_paths=['tests'])
-        handler = OpbeatHandler(client=client)
+        handler = LoggingHandler(client=client)
         self.assertEquals(handler.client, client)
 
     def test_invalid_first_arg_type(self):
-        self.assertRaises(ValueError, OpbeatHandler, object)
+        self.assertRaises(ValueError, LoggingHandler, object)

@@ -29,7 +29,7 @@ import pytest
 from elasticapm import instrumentation
 from elasticapm.base import Client
 from elasticapm.contrib.django import DjangoClient
-from elasticapm.contrib.django.handlers import OpbeatHandler
+from elasticapm.contrib.django.handlers import LoggingHandler
 from elasticapm.contrib.django.middleware.wsgi import ElasticAPM
 from elasticapm.contrib.django.models import client, get_client, get_client_config
 from elasticapm.traces import Transaction
@@ -388,7 +388,7 @@ class DjangoClientTest(TestCase):
             args=(),
             exc_info=(None, None, None),
         )
-        handler = OpbeatHandler()
+        handler = LoggingHandler()
         handler.emit(record)
 
         self.assertEquals(len(self.opbeat.events), 1)
@@ -932,7 +932,7 @@ class DjangoLoggingTest(TestCase):
         self.client = get_client()
 
     def test_request_kwarg(self):
-        handler = OpbeatHandler()
+        handler = LoggingHandler()
 
         logger = self.logger
         logger.handlers = []

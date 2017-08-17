@@ -1,5 +1,5 @@
 """
-opbeat.contrib.flask
+elasticapm.contrib.flask
 ~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat
@@ -22,7 +22,7 @@ import elasticapm.instrumentation.control
 from elasticapm.base import Client
 from elasticapm.conf import setup_logging
 from elasticapm.contrib.flask.utils import get_data_from_request
-from elasticapm.handlers.logging import OpbeatHandler
+from elasticapm.handlers.logging import LoggingHandler
 from elasticapm.utils import (build_name_with_http_method_prefix,
                               disabled_due_to_debug)
 from elasticapm.utils.deprecation import deprecated
@@ -144,7 +144,7 @@ class Opbeat(object):
             )
 
         if self.logging:
-            setup_logging(OpbeatHandler(self.client))
+            setup_logging(LoggingHandler(self.client))
 
         signals.got_request_exception.connect(self.handle_exception, sender=app, weak=False)
 

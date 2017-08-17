@@ -1,5 +1,5 @@
 """
-opbeat.contrib.django.client
+elasticapm.contrib.django.client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat
@@ -178,7 +178,7 @@ class DjangoClient(Client):
         return result
 
     def get_stack_info_for_trace(self, frames, extended=True):
-        """If the stacktrace originates within the Opbeat module, it will skip
+        """If the stacktrace originates within the elasticapm module, it will skip
         frames until some other module comes up."""
         frames = list(iterate_with_template_sources(frames, extended))
         i = 0

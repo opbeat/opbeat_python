@@ -1,5 +1,5 @@
 """
-opbeat.contrib.django.handlers
+elasticapm.contrib.django.handlers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat
@@ -13,10 +13,10 @@ from __future__ import absolute_import
 
 import logging
 
-from elasticapm.handlers.logging import OpbeatHandler as BaseOpbeatHandler
+from elasticapm.handlers.logging import LoggingHandler as BaseLoggingHandler
 
 
-class OpbeatHandler(BaseOpbeatHandler):
+class LoggingHandler(BaseLoggingHandler):
     def __init__(self):
         logging.Handler.__init__(self)
 
@@ -34,4 +34,4 @@ class OpbeatHandler(BaseOpbeatHandler):
         request = getattr(LogMiddleware.thread, 'request', None)
         request = getattr(record, 'request', request)
 
-        return super(OpbeatHandler, self)._emit(record, request=request)
+        return super(LoggingHandler, self)._emit(record, request=request)

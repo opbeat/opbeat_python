@@ -1,5 +1,5 @@
 """
-opbeat.handlers.logging
+elasticapm.handlers.logging
 ~~~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat
@@ -22,7 +22,7 @@ from elasticapm.utils.encoding import to_string
 from elasticapm.utils.stacks import iter_stack_frames
 
 
-class OpbeatHandler(logging.Handler, object):
+class LoggingHandler(logging.Handler, object):
     def __init__(self, *args, **kwargs):
         client = kwargs.pop('client_cls', Client)
         if len(args) == 1:
@@ -42,7 +42,7 @@ class OpbeatHandler(logging.Handler, object):
         else:
             self.client = client(*args, **kwargs)
 
-        super(OpbeatHandler, self).__init__(*args, **kwargs)
+        super(LoggingHandler, self).__init__(*args, **kwargs)
 
     def emit(self, record):
         self.format(record)
