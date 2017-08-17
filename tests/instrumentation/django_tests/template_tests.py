@@ -11,7 +11,7 @@ import mock
 import pytest
 
 from conftest import BASE_TEMPLATE_DIR
-from elasticapm.contrib.django.models import get_client, elasticapm
+from elasticapm.contrib.django.models import elasticapm, get_client
 
 # Testing Django 1.8+ backends
 TEMPLATES = (

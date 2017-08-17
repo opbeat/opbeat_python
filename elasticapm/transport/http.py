@@ -4,7 +4,8 @@ import socket
 
 from elasticapm.conf import defaults
 from elasticapm.contrib.async_worker import AsyncWorker
-from elasticapm.transport.base import AsyncTransport, Transport, TransportException
+from elasticapm.transport.base import (AsyncTransport, Transport,
+                                       TransportException)
 from elasticapm.utils.compat import HTTPError
 
 try:

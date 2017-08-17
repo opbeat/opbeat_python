@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest  # isort:skip
-
-from tests.contrib.django.testapp.views import IgnoredException
-
 django = pytest.importorskip("django")  # isort:skip
 
-import datetime
 import logging
 from copy import deepcopy
 
@@ -33,10 +29,12 @@ from elasticapm.base import Client
 from elasticapm.contrib.django import DjangoClient
 from elasticapm.contrib.django.handlers import LoggingHandler
 from elasticapm.contrib.django.middleware.wsgi import ElasticAPM
-from elasticapm.contrib.django.models import client, get_client, get_client_config
+from elasticapm.contrib.django.models import (client, get_client,
+                                              get_client_config)
 from elasticapm.traces import Transaction
 from elasticapm.utils import six
 from elasticapm.utils.lru import LRUCache
+from tests.contrib.django.testapp.views import IgnoredException
 
 try:
     from celery.tests.utils import with_eager_tasks
