@@ -9,7 +9,7 @@ Large portions are
 :license: BSD, see LICENSE for more details.
 """
 from elasticapm.base import Client
-from elasticapm.middleware import Opbeat as Middleware
+from elasticapm.middleware import ElasticAPM as Middleware
 
 
 def list_from_setting(config, setting):

@@ -9,16 +9,16 @@ Large portions are
 :license: BSD, see LICENSE for more details.
 """
 
-from elasticapm.middleware import Opbeat
+from elasticapm.middleware import ElasticAPM as ElasticAPMBase
 
 
-class Opbeat(Opbeat):
+class ElasticAPM(ElasticAPMBase):
     """
     Identical to the default WSGI middleware except that
     the client comes dynamically via ``get_client
 
-    >>> from elasticapm.contrib.django.middleware.wsgi import Opbeat
-    >>> application = Opbeat(application)
+    >>> from elasticapm.contrib.django.middleware.wsgi import ElasticAPM
+    >>> application = ElasticAPM(application)
     """
     def __init__(self, application):
         self.application = application

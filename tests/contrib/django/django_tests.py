@@ -30,7 +30,7 @@ from elasticapm import instrumentation
 from elasticapm.base import Client
 from elasticapm.contrib.django import DjangoClient
 from elasticapm.contrib.django.handlers import OpbeatHandler
-from elasticapm.contrib.django.middleware.wsgi import Opbeat
+from elasticapm.contrib.django.middleware.wsgi import ElasticAPM
 from elasticapm.contrib.django.models import client, get_client, get_client_config
 from elasticapm.traces import Transaction
 from elasticapm.utils import six
@@ -53,7 +53,7 @@ class MockClientHandler(_TestClientHandler):
         return super(MockClientHandler, self).__call__(environ)
 
 
-class MockOpbeatMiddleware(Opbeat):
+class MockOpbeatMiddleware(ElasticAPM):
     def __call__(self, environ, start_response=[]):
         # this pretends doesnt require start_response
         return list(super(MockOpbeatMiddleware, self).__call__(environ, start_response))

@@ -1,5 +1,5 @@
 """
-opbeat.middleware
+elasticapm.middleware
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat
@@ -15,13 +15,13 @@ from elasticapm.utils import get_url_dict
 from elasticapm.utils.wsgi import get_current_url, get_environ, get_headers
 
 
-class Opbeat(object):
+class ElasticAPM(object):
     """
     A WSGI middleware which will attempt to capture any
-    uncaught exceptions and send them to Opbeat.
+    uncaught exceptions and send them to ElasticAPM.
 
     >>> from elasticapm.base import Client
-    >>> application = Opbeat(application, Client())
+    >>> application = ElasticAPM(application, Client())
     """
     def __init__(self, application, client):
         self.application = application
