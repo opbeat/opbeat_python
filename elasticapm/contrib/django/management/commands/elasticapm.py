@@ -258,7 +258,7 @@ class Command(BaseCommand):
                 )
         except ValueError:
             self.write(
-                'Tracing middleware not set!', red
+                'Tracing middleware not configured!', red
             )
             self.write(
                 '\n'

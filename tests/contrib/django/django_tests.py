@@ -1219,7 +1219,7 @@ class DjangoManagementCommandTest(TestCase):
         with self.settings(MIDDLEWARE_CLASSES=()):
             call_command('elasticapm', 'check', stdout=stdout)
         output = stdout.getvalue()
-        assert 'Opbeat APM middleware not set!' in output
+        assert 'Tracing middleware not configured!' in output
 
     def test_middleware_not_first(self):
         stdout = six.StringIO()
