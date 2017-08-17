@@ -32,7 +32,7 @@ TEMPLATES = (
 
 class TracesTest(TestCase):
     def setUp(self):
-        self.opbeat = get_client()
+        self.elasticapm_client = get_client()
         elasticapm.instrumentation.control.instrument()
 
     @mock.patch("elasticapm.traces.TransactionsStore.should_collect")
@@ -44,7 +44,7 @@ class TracesTest(TestCase):
             self.client.get(reverse('render-heavy-template'))
             self.client.get(reverse('render-heavy-template'))
 
-        transactions = self.opbeat.instrumentation_store.get_all()
+        transactions = self.elasticapm_client.instrumentation_store.get_all()
 
         self.assertEqual(len(transactions), 3)
         traces = transactions[0]['traces']
@@ -79,7 +79,7 @@ class TracesTest(TestCase):
             self.client.get(reverse('render-jinja2-template'))
             self.client.get(reverse('render-jinja2-template'))
 
-        transactions = self.opbeat.instrumentation_store.get_all()
+        transactions = self.elasticapm_client.instrumentation_store.get_all()
 
         self.assertEqual(len(transactions), 3)
         traces = transactions[0]['traces']

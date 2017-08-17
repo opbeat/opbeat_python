@@ -72,9 +72,9 @@ def force_text(s, encoding='utf-8', strings_only=False, errors='strict'):
     return s
 
 
-def _has_opbeat_metadata(value):
+def _has_elasticapm_metadata(value):
     try:
-        return callable(value.__getattribute__("__opbeat__"))
+        return callable(value.__getattribute__("__elasticapm__"))
     except:
         return False
 
@@ -112,8 +112,8 @@ def transform(value, stack=None, context=None):
     elif isinstance(value, six.binary_type):
         ret = to_string(value)
     elif not isinstance(value, six.class_types) and \
-            _has_opbeat_metadata(value):
-        ret = transform_rec(value.__opbeat__())
+            _has_elasticapm_metadata(value):
+        ret = transform_rec(value.__elasticapm__())
     elif isinstance(value, bool):
         ret = bool(value)
     elif isinstance(value, float):

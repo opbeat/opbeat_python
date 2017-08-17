@@ -55,10 +55,10 @@ class MockClientHandler(_TestClientHandler):
         return super(MockClientHandler, self).__call__(environ)
 
 
-class MockOpbeatMiddleware(ElasticAPM):
+class MockMiddleware(ElasticAPM):
     def __call__(self, environ, start_response=[]):
         # this pretends doesnt require start_response
-        return list(super(MockOpbeatMiddleware, self).__call__(environ, start_response))
+        return list(super(MockMiddleware, self).__call__(environ, start_response))
 
 
 class TempStoreClient(DjangoClient):
@@ -93,14 +93,14 @@ class DjangoClientTest(TestCase):
     urls = 'tests.contrib.django.testapp.urls'
 
     def setUp(self):
-        self.opbeat = get_client()
-        self.opbeat.events = []
+        self.elasticapm_client = get_client()
+        self.elasticapm_client.events = []
         instrumentation.control.instrument()
 
     def test_basic(self):
-        self.opbeat.capture('Message', message='foo')
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.elasticapm_client.capture('Message', message='foo')
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
         log = event['log']
         self.assertTrue('message' in log)
 
@@ -116,8 +116,8 @@ class DjangoClientTest(TestCase):
         else:
             self.fail('Expected an exception.')
 
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
         self.assertTrue('exception' in event)
         exc = event['exception']
         self.assertEquals(exc['type'], 'ValueError')
@@ -127,8 +127,8 @@ class DjangoClientTest(TestCase):
     def test_view_exception(self):
         self.assertRaises(Exception, self.client.get, reverse('elasticapm-raise-exc'))
 
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
         self.assertTrue('exception' in event)
         exc = event['exception']
         self.assertEquals(exc['type'], 'Exception')
@@ -142,9 +142,9 @@ class DjangoClientTest(TestCase):
                 Exception,
                 self.client.get, reverse('elasticapm-raise-exc')
             )
-        self.assertEquals(len(self.opbeat.events), 0)
+        self.assertEquals(len(self.elasticapm_client.events), 0)
 
-    def test_view_exception_opbeat_debug(self):
+    def test_view_exception_elasticapm_debug(self):
         with self.settings(
             DEBUG=True,
             ELASTICAPM={
@@ -156,7 +156,7 @@ class DjangoClientTest(TestCase):
                 Exception,
                 self.client.get, reverse('elasticapm-raise-exc')
             )
-        self.assertEquals(len(self.opbeat.events), 1)
+        self.assertEquals(len(self.elasticapm_client.events), 1)
 
     def test_user_info(self):
         user = User(username='admin', email='admin@example.com')
@@ -165,8 +165,8 @@ class DjangoClientTest(TestCase):
 
         self.assertRaises(Exception, self.client.get, reverse('elasticapm-raise-exc'))
 
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
         self.assertTrue('user' in event['context'])
         user_info = event['context']['user']
         self.assertTrue('is_authenticated' in user_info)
@@ -178,8 +178,8 @@ class DjangoClientTest(TestCase):
 
         self.assertRaises(Exception, self.client.get, reverse('elasticapm-raise-exc'))
 
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
         self.assertTrue('user' in event['context'])
         user_info = event['context']['user']
         self.assertTrue('is_authenticated' in user_info)
@@ -202,8 +202,8 @@ class DjangoClientTest(TestCase):
             self.assertRaises(Exception, self.client.get,
                               reverse('elasticapm-raise-exc'))
 
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
         self.assertTrue('user' in event['context'])
         user_info = event['context']['user']
         self.assertEquals(user_info, {})
@@ -220,8 +220,8 @@ class DjangoClientTest(TestCase):
             self.assertTrue(self.client.login(username='admin', password='admin'))
             self.assertRaises(Exception, self.client.get, reverse('elasticapm-raise-exc'))
 
-            self.assertEquals(len(self.opbeat.events), 1)
-            event = self.opbeat.events.pop(0)['errors'][0]
+            self.assertEquals(len(self.elasticapm_client.events), 1)
+            event = self.elasticapm_client.events.pop(0)['errors'][0]
             self.assertTrue('user' in event['context'])
             user_info = event['context']['user']
             self.assertTrue('is_authenticated' in user_info)
@@ -241,8 +241,8 @@ class DjangoClientTest(TestCase):
             with pytest.raises(Exception):
                 resp = self.client.get(reverse('elasticapm-raise-exc'))
 
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
         assert event['context']['user'] == {}
 
     def test_user_info_without_auth_middleware(self):
@@ -253,16 +253,16 @@ class DjangoClientTest(TestCase):
             self.assertRaises(Exception,
                               self.client.get,
                               reverse('elasticapm-raise-exc'))
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
         assert event['context']['user'] == {}
 
     def test_request_middleware_exception(self):
         with self.settings(MIDDLEWARE_CLASSES=['tests.contrib.django.testapp.middleware.BrokenRequestMiddleware']):
             self.assertRaises(ImportError, self.client.get, reverse('elasticapm-raise-exc'))
 
-            self.assertEquals(len(self.opbeat.events), 1)
-            event = self.opbeat.events.pop(0)['errors'][0]
+            self.assertEquals(len(self.elasticapm_client.events), 1)
+            event = self.elasticapm_client.events.pop(0)['errors'][0]
 
             self.assertTrue('exception' in event)
             exc = event['exception']
@@ -276,8 +276,8 @@ class DjangoClientTest(TestCase):
         with self.settings(MIDDLEWARE_CLASSES=['tests.contrib.django.testapp.middleware.BrokenResponseMiddleware']):
             self.assertRaises(ImportError, self.client.get, reverse('elasticapm-no-error'))
 
-            self.assertEquals(len(self.opbeat.events), 1)
-            event = self.opbeat.events.pop(0)['errors'][0]
+            self.assertEquals(len(self.elasticapm_client.events), 1)
+            event = self.elasticapm_client.events.pop(0)['errors'][0]
 
             self.assertTrue('exception' in event)
             exc = event['exception']
@@ -288,12 +288,12 @@ class DjangoClientTest(TestCase):
     def test_broken_500_handler_with_middleware(self):
         with self.settings(BREAK_THAT_500=True):
             client = _TestClient(REMOTE_ADDR='127.0.0.1')
-            client.handler = MockOpbeatMiddleware(MockClientHandler())
+            client.handler = MockMiddleware(MockClientHandler())
 
             self.assertRaises(Exception, client.get, reverse('elasticapm-raise-exc'))
 
-            self.assertEquals(len(self.opbeat.events), 2)
-            event = self.opbeat.events.pop(0)['errors'][0]
+            self.assertEquals(len(self.elasticapm_client.events), 2)
+            event = self.elasticapm_client.events.pop(0)['errors'][0]
 
             self.assertTrue('exception' in event)
             exc = event['exception']
@@ -301,7 +301,7 @@ class DjangoClientTest(TestCase):
             self.assertEquals(exc['message'], 'Exception: view exception')
             self.assertEquals(event['culprit'], 'tests.contrib.django.testapp.views.raise_exc')
 
-            event = self.opbeat.events.pop(0)['errors'][0]
+            event = self.elasticapm_client.events.pop(0)['errors'][0]
 
             self.assertTrue('exception' in event)
             exc = event['exception']
@@ -313,8 +313,8 @@ class DjangoClientTest(TestCase):
         with self.settings(MIDDLEWARE_CLASSES=['tests.contrib.django.testapp.middleware.BrokenViewMiddleware']):
             self.assertRaises(ImportError, self.client.get, reverse('elasticapm-raise-exc'))
 
-            self.assertEquals(len(self.opbeat.events), 1)
-            event = self.opbeat.events.pop(0)['errors'][0]
+            self.assertEquals(len(self.elasticapm_client.events), 1)
+            event = self.elasticapm_client.events.pop(0)['errors'][0]
 
             self.assertTrue('exception' in event)
             exc = event['exception']
@@ -323,32 +323,32 @@ class DjangoClientTest(TestCase):
             self.assertEquals(event['culprit'], 'tests.contrib.django.testapp.middleware.process_view')
 
     def test_exclude_modules_view(self):
-        exclude_paths = self.opbeat.exclude_paths
-        self.opbeat.exclude_paths = ['tests.views.decorated_raise_exc']
+        exclude_paths = self.elasticapm_client.exclude_paths
+        self.elasticapm_client.exclude_paths = ['tests.views.decorated_raise_exc']
         self.assertRaises(Exception, self.client.get, reverse('elasticapm-raise-exc-decor'))
 
-        self.assertEquals(len(self.opbeat.events), 1, self.opbeat.events)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1, self.elasticapm_client.events)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
 
         self.assertEquals(event['culprit'], 'tests.contrib.django.testapp.views.raise_exc')
-        self.opbeat.exclude_paths = exclude_paths
+        self.elasticapm_client.exclude_paths = exclude_paths
 
     def test_include_modules(self):
-        include_paths = self.opbeat.include_paths
-        self.opbeat.include_paths = ['django.shortcuts.get_object_or_404']
+        include_paths = self.elasticapm_client.include_paths
+        self.elasticapm_client.include_paths = ['django.shortcuts.get_object_or_404']
 
         self.assertRaises(Exception, self.client.get, reverse('elasticapm-django-exc'))
 
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
 
         self.assertEquals(event['culprit'], 'django.shortcuts.get_object_or_404')
-        self.opbeat.include_paths = include_paths
+        self.elasticapm_client.include_paths = include_paths
 
     def test_ignored_exception_is_ignored(self):
         with pytest.raises(IgnoredException):
             self.client.get(reverse('elasticapm-ignored-exception'))
-        self.assertEquals(len(self.opbeat.events), 0)
+        self.assertEquals(len(self.elasticapm_client.events), 0)
 
     def test_template_name_as_view(self):
         # TODO this test passes only with TEMPLATE_DEBUG=True
@@ -371,8 +371,8 @@ class DjangoClientTest(TestCase):
                 self.client.get, reverse('elasticapm-template-exc')
             )
 
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
 
         self.assertEquals(event['culprit'], 'error.html')
 
@@ -398,8 +398,8 @@ class DjangoClientTest(TestCase):
         handler = LoggingHandler()
         handler.emit(record)
 
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
 
         self.assertEquals(event['log']['param_message'], 'test')
         self.assertEquals(event['log']['logger_name'], 'foo')
@@ -411,8 +411,8 @@ class DjangoClientTest(TestCase):
             resp = self.client.get('/non-existant-page')
             self.assertEquals(resp.status_code, 404)
 
-            self.assertEquals(len(self.opbeat.events), 1)
-            event = self.opbeat.events.pop(0)['errors'][0]
+            self.assertEquals(len(self.elasticapm_client.events), 1)
+            event = self.elasticapm_client.events.pop(0)['errors'][0]
 
             self.assertEquals(event['log']['level'], 'info')
             self.assertEquals(event['log']['logger_name'], 'http404')
@@ -432,8 +432,8 @@ class DjangoClientTest(TestCase):
             resp = self.client.get('/non-existant-page')
             self.assertEquals(resp.status_code, 404)
 
-            self.assertEquals(len(self.opbeat.events), 1)
-            event = self.opbeat.events.pop(0)['errors'][0]
+            self.assertEquals(len(self.elasticapm_client.events), 1)
+            event = self.elasticapm_client.events.pop(0)['errors'][0]
 
             self.assertEquals(event['log']['level'], 'info')
             self.assertEquals(event['log']['logger_name'], 'http404')
@@ -454,7 +454,7 @@ class DjangoClientTest(TestCase):
         ):
             resp = self.client.get('/non-existant-page')
             self.assertEquals(resp.status_code, 404)
-            self.assertEquals(len(self.opbeat.events), 0)
+            self.assertEquals(len(self.elasticapm_client.events), 0)
 
     @pytest.mark.skipif(django.VERSION < (1, 10),
                         reason='new-style middlewares')
@@ -468,7 +468,7 @@ class DjangoClientTest(TestCase):
         ):
             resp = self.client.get('/non-existant-page')
             self.assertEquals(resp.status_code, 404)
-            self.assertEquals(len(self.opbeat.events), 0)
+            self.assertEquals(len(self.elasticapm_client.events), 0)
 
     def test_response_error_id_middleware(self):
         with self.settings(MIDDLEWARE_CLASSES=[
@@ -478,8 +478,8 @@ class DjangoClientTest(TestCase):
             self.assertEquals(resp.status_code, 404)
             headers = dict(resp.items())
             self.assertTrue('X-ElasticAPM-ErrorId' in headers)
-            self.assertEquals(len(self.opbeat.events), 1)
-            event = self.opbeat.events.pop(0)['errors'][0]
+            self.assertEquals(len(self.elasticapm_client.events), 1)
+            event = self.elasticapm_client.events.pop(0)['errors'][0]
             self.assertEquals(event['id'], headers['X-ElasticAPM-ErrorId'])
 
     @pytest.mark.skipif(django.VERSION < (1, 10),
@@ -492,17 +492,17 @@ class DjangoClientTest(TestCase):
             self.assertEquals(resp.status_code, 404)
             headers = dict(resp.items())
             self.assertTrue('X-ElasticAPM-ErrorId' in headers)
-            self.assertEquals(len(self.opbeat.events), 1)
-            event = self.opbeat.events.pop(0)['errors'][0]
+            self.assertEquals(len(self.elasticapm_client.events), 1)
+            event = self.elasticapm_client.events.pop(0)['errors'][0]
             self.assertEquals(event['id'], headers['X-ElasticAPM-ErrorId'])
 
     def test_get_client(self):
         self.assertEquals(get_client(), get_client())
         self.assertEquals(get_client('elasticapm.base.Client').__class__, Client)
-        self.assertEquals(get_client(), self.opbeat)
+        self.assertEquals(get_client(), self.elasticapm_client)
 
-        self.assertEquals(get_client('%s.%s' % (self.opbeat.__class__.__module__, self.opbeat.__class__.__name__)), self.opbeat)
-        self.assertEquals(get_client(), self.opbeat)
+        self.assertEquals(get_client('%s.%s' % (self.elasticapm_client.__class__.__module__, self.elasticapm_client.__class__.__name__)), self.elasticapm_client)
+        self.assertEquals(get_client(), self.elasticapm_client)
 
     # This test only applies to Django 1.3+
     def test_raw_post_data_partial_read(self):
@@ -520,10 +520,10 @@ class DjangoClientTest(TestCase):
         })
         request.read(1)
 
-        self.opbeat.capture('Message', message='foo', request=request)
+        self.elasticapm_client.capture('Message', message='foo', request=request)
 
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
 
         self.assertTrue('request' in event['context'])
         request = event['context']['request']
@@ -540,10 +540,10 @@ class DjangoClientTest(TestCase):
             'ACCEPT': 'application/json',
         })
         request.POST = QueryDict("x=1&y=2")
-        self.opbeat.capture('Message', message='foo', request=request)
+        self.elasticapm_client.capture('Message', message='foo', request=request)
 
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
 
         self.assertTrue('request' in event['context'])
         request = event['context']['request']
@@ -561,10 +561,10 @@ class DjangoClientTest(TestCase):
             'ACCEPT': 'application/json',
             'CONTENT_LENGTH': '6',
         })
-        self.opbeat.capture('Message', message='foo', request=request)
+        self.elasticapm_client.capture('Message', message='foo', request=request)
 
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
 
         self.assertTrue('request' in event['context'])
         request = event['context']['request']
@@ -585,8 +585,8 @@ class DjangoClientTest(TestCase):
         })
         with self.settings(ALLOWED_HOSTS=['example.com']):
             # this should not raise a DisallowedHost exception
-            self.opbeat.capture('Message', message='foo', request=request)
-        event = self.opbeat.events.pop(0)['errors'][0]
+            self.elasticapm_client.capture('Message', message='foo', request=request)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
         assert event['context']['request']['url']['raw'] == 'http://testserver/'
 
     @pytest.mark.skipif(django.VERSION >= (1, 9),
@@ -603,8 +603,8 @@ class DjangoClientTest(TestCase):
         })
         with self.settings(ALLOWED_HOSTS=['example.com']):
             # this should not raise a DisallowedHost exception
-            self.opbeat.capture('Message', message='foo', request=request)
-        event = self.opbeat.events.pop(0)['errors'][0]
+            self.elasticapm_client.capture('Message', message='foo', request=request)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
         assert event['context']['request']['url'] == {'raw': 'DisallowedHost'}
 
     # This test only applies to Django 1.3+
@@ -621,10 +621,10 @@ class DjangoClientTest(TestCase):
         })
         request.read(1)
 
-        self.opbeat.capture('Message', message='foo', request=request)
+        self.elasticapm_client.capture('Message', message='foo', request=request)
 
-        self.assertEquals(len(self.opbeat.events), 1)
-        event = self.opbeat.events.pop(0)['errors'][0]
+        self.assertEquals(len(self.elasticapm_client.events), 1)
+        event = self.elasticapm_client.events.pop(0)['errors'][0]
 
         self.assertTrue('request' in event['context'])
         request = event['context']['request']
@@ -641,14 +641,14 @@ class DjangoClientTest(TestCase):
         self.assertEquals(env['SERVER_PORT'], '80')
 
     def test_transaction_metrics(self):
-        self.opbeat.instrumentation_store.get_all()  # clear the store
+        self.elasticapm_client.instrumentation_store.get_all()  # clear the store
         with self.settings(MIDDLEWARE_CLASSES=[
                 'elasticapm.contrib.django.middleware.TracingMiddleware']):
-            self.assertEqual(len(self.opbeat.instrumentation_store), 0)
+            self.assertEqual(len(self.elasticapm_client.instrumentation_store), 0)
             self.client.get(reverse('elasticapm-no-error'))
-            self.assertEqual(len(self.opbeat.instrumentation_store), 1)
+            self.assertEqual(len(self.elasticapm_client.instrumentation_store), 1)
 
-            transactions = self.opbeat.instrumentation_store.get_all()
+            transactions = self.elasticapm_client.instrumentation_store.get_all()
 
             assert len(transactions) == 1
             transaction = transactions[0]
@@ -659,14 +659,14 @@ class DjangoClientTest(TestCase):
     @pytest.mark.skipif(django.VERSION < (1, 10),
                         reason='new-style middlewares')
     def test_transaction_metrics_new_style_middleware(self):
-        self.opbeat.instrumentation_store.get_all()  # clear the store
+        self.elasticapm_client.instrumentation_store.get_all()  # clear the store
         with self.settings(MIDDLEWARE_CLASSES=None, MIDDLEWARE=[
                 'elasticapm.contrib.django.middleware.TracingMiddleware']):
-            self.assertEqual(len(self.opbeat.instrumentation_store), 0)
+            self.assertEqual(len(self.elasticapm_client.instrumentation_store), 0)
             self.client.get(reverse('elasticapm-no-error'))
-            self.assertEqual(len(self.opbeat.instrumentation_store), 1)
+            self.assertEqual(len(self.elasticapm_client.instrumentation_store), 1)
 
-            transactions = self.opbeat.instrumentation_store.get_all()
+            transactions = self.elasticapm_client.instrumentation_store.get_all()
 
             assert len(transactions) == 1
             transaction = transactions[0]
@@ -675,7 +675,7 @@ class DjangoClientTest(TestCase):
             assert transaction['name'] == 'GET tests.contrib.django.testapp.views.no_error'
 
     def test_request_metrics_301_append_slash(self):
-        self.opbeat.instrumentation_store.get_all()  # clear the store
+        self.elasticapm_client.instrumentation_store.get_all()  # clear the store
 
         # enable middleware wrapping
         client = get_client()
@@ -689,7 +689,7 @@ class DjangoClientTest(TestCase):
             APPEND_SLASH=True,
         ):
             self.client.get(reverse('elasticapm-no-error-slash')[:-1])
-        transactions = self.opbeat.instrumentation_store.get_all()
+        transactions = self.elasticapm_client.instrumentation_store.get_all()
         self.assertIn(
             transactions[0]['name'], (
                 # django <= 1.8
@@ -702,7 +702,7 @@ class DjangoClientTest(TestCase):
     @pytest.mark.skipif(django.VERSION < (1, 10),
                         reason='new-style middlewares')
     def test_request_metrics_301_append_slash_new_style_middleware(self):
-        self.opbeat.instrumentation_store.get_all()  # clear the store
+        self.elasticapm_client.instrumentation_store.get_all()  # clear the store
 
         # enable middleware wrapping
         client = get_client()
@@ -717,7 +717,7 @@ class DjangoClientTest(TestCase):
             APPEND_SLASH=True,
         ):
             self.client.get(reverse('elasticapm-no-error-slash')[:-1])
-        transactions = self.opbeat.instrumentation_store.get_all()
+        transactions = self.elasticapm_client.instrumentation_store.get_all()
         self.assertIn(
             transactions[0]['name'], (
                 # django <= 1.8
@@ -728,7 +728,7 @@ class DjangoClientTest(TestCase):
         )
 
     def test_request_metrics_301_prepend_www(self):
-        self.opbeat.instrumentation_store.get_all()  # clear the store
+        self.elasticapm_client.instrumentation_store.get_all()  # clear the store
 
         # enable middleware wrapping
         client = get_client()
@@ -742,7 +742,7 @@ class DjangoClientTest(TestCase):
             PREPEND_WWW=True,
         ):
             self.client.get(reverse('elasticapm-no-error'))
-        transactions = self.opbeat.instrumentation_store.get_all()
+        transactions = self.elasticapm_client.instrumentation_store.get_all()
         self.assertEqual(
             transactions[0]['name'],
             'GET django.middleware.common.CommonMiddleware.process_request'
@@ -751,7 +751,7 @@ class DjangoClientTest(TestCase):
     @pytest.mark.skipif(django.VERSION < (1, 10),
                         reason='new-style middlewares')
     def test_request_metrics_301_prepend_www_new_style_middleware(self):
-        self.opbeat.instrumentation_store.get_all()  # clear the store
+        self.elasticapm_client.instrumentation_store.get_all()  # clear the store
 
         # enable middleware wrapping
         client = get_client()
@@ -766,14 +766,14 @@ class DjangoClientTest(TestCase):
             PREPEND_WWW=True,
         ):
             self.client.get(reverse('elasticapm-no-error'))
-        transactions = self.opbeat.instrumentation_store.get_all()
+        transactions = self.elasticapm_client.instrumentation_store.get_all()
         self.assertEqual(
             transactions[0]['name'],
             'GET django.middleware.common.CommonMiddleware.process_request'
         )
 
     def test_request_metrics_contrib_redirect(self):
-        self.opbeat.instrumentation_store.get_all()  # clear the store
+        self.elasticapm_client.instrumentation_store.get_all()  # clear the store
 
         # enable middleware wrapping
         client = get_client()
@@ -792,7 +792,7 @@ class DjangoClientTest(TestCase):
         ):
             response = self.client.get('/redirect/me/')
 
-        transactions = self.opbeat.instrumentation_store.get_all()
+        transactions = self.elasticapm_client.instrumentation_store.get_all()
         self.assertEqual(
             transactions[0]['name'],
             'GET django.contrib.redirects.middleware.RedirectFallbackMiddleware'
@@ -802,7 +802,7 @@ class DjangoClientTest(TestCase):
     @pytest.mark.skipif(django.VERSION < (1, 10),
                         reason='new-style middlewares')
     def test_request_metrics_contrib_redirect_new_style_middleware(self):
-        self.opbeat.instrumentation_store.get_all()  # clear the store
+        self.elasticapm_client.instrumentation_store.get_all()  # clear the store
 
         # enable middleware wrapping
         client = get_client()
@@ -822,7 +822,7 @@ class DjangoClientTest(TestCase):
         ):
             response = self.client.get('/redirect/me/')
 
-        transactions = self.opbeat.instrumentation_store.get_all()
+        transactions = self.elasticapm_client.instrumentation_store.get_all()
         self.assertEqual(
             transactions[0]['name'],
             'GET django.contrib.redirects.middleware.RedirectFallbackMiddleware'
@@ -840,7 +840,7 @@ class DjangoClientTest(TestCase):
             pytest.deprecated_call(get_client_config)
 
     def test_request_metrics_name_override(self):
-        self.opbeat.instrumentation_store.get_all()  # clear the store
+        self.elasticapm_client.instrumentation_store.get_all()  # clear the store
         with self.settings(
             MIDDLEWARE_CLASSES=[
                 'elasticapm.contrib.django.middleware.TracingMiddleware',
@@ -848,21 +848,21 @@ class DjangoClientTest(TestCase):
             ]
         ):
             self.client.get(reverse('elasticapm-no-error'))
-        transactions = self.opbeat.instrumentation_store.get_all()
+        transactions = self.elasticapm_client.instrumentation_store.get_all()
         self.assertEqual(
             transactions[0]['name'],
             'GET foobar'
         )
 
     def test_request_metrics_404_resolve_error(self):
-        self.opbeat.instrumentation_store.get_all()  # clear the store
+        self.elasticapm_client.instrumentation_store.get_all()  # clear the store
         with self.settings(
                 MIDDLEWARE_CLASSES=[
                     'elasticapm.contrib.django.middleware.TracingMiddleware',
                 ]
         ):
             self.client.get('/i-dont-exist/')
-        transactions = self.opbeat.instrumentation_store.get_all()
+        transactions = self.elasticapm_client.instrumentation_store.get_all()
         self.assertEqual(
             transactions[0]['name'],
             ''
@@ -969,7 +969,7 @@ def client_get(client, url):
 
 def test_stacktraces_have_templates():
     client = _TestClient()
-    opbeat = get_client()
+    elasticapm_client = get_client()
     instrumentation.control.instrument()
 
     # Clear the LRU frame cache
@@ -994,7 +994,7 @@ def test_stacktraces_have_templates():
             resp = client.get(reverse("render-heavy-template"))
     assert resp.status_code == 200
 
-    transactions = opbeat.instrumentation_store.get_all()
+    transactions = elasticapm_client.instrumentation_store.get_all()
     assert len(transactions) == 1
     transaction = transactions[0]
     traces = transaction['traces']
@@ -1017,9 +1017,9 @@ def test_stacktraces_have_templates():
         assert False is True, "Template was not found"
 
 
-def test_stacktrace_filtered_for_opbeat():
+def test_stacktrace_filtered_for_elasticapm():
     client = _TestClient()
-    opbeat = get_client()
+    elasticapm_client = get_client()
     instrumentation.control.instrument()
 
     # Clear the LRU frame cache
@@ -1033,7 +1033,7 @@ def test_stacktrace_filtered_for_opbeat():
             resp = client.get(reverse("render-heavy-template"))
     assert resp.status_code == 200
 
-    transactions = opbeat.instrumentation_store.get_all()
+    transactions = elasticapm_client.instrumentation_store.get_all()
     traces = transactions[0]['traces']
 
     expected_signatures = ['transaction', 'list_users.html',
@@ -1046,7 +1046,7 @@ def test_stacktrace_filtered_for_opbeat():
 
 def test_perf_template_render(benchmark):
     client = _TestClient()
-    opbeat = get_client()
+    elasticapm_client = get_client()
     responses = []
     instrumentation.control.instrument()
     with mock.patch("elasticapm.traces.TransactionsStore.should_collect") as should_collect:
@@ -1059,7 +1059,7 @@ def test_perf_template_render(benchmark):
     for resp in responses:
         assert resp.status_code == 200
 
-    transactions = opbeat.instrumentation_store.get_all()
+    transactions = elasticapm_client.instrumentation_store.get_all()
 
     # If the test falls right at the change from one minute to another
     # this will have two items.
@@ -1070,7 +1070,7 @@ def test_perf_template_render(benchmark):
 
 def test_perf_template_render_no_middleware(benchmark):
     client = _TestClient()
-    opbeat = get_client()
+    elasticapm_client = get_client()
     responses = []
     instrumentation.control.instrument()
     with mock.patch(
@@ -1082,7 +1082,7 @@ def test_perf_template_render_no_middleware(benchmark):
     for resp in responses:
         assert resp.status_code == 200
 
-    transactions = opbeat.instrumentation_store.get_all()
+    transactions = elasticapm_client.instrumentation_store.get_all()
     assert len(transactions) == 0
 
 
@@ -1090,10 +1090,10 @@ def test_perf_template_render_no_middleware(benchmark):
 def test_perf_database_render(benchmark):
     client = _TestClient()
 
-    opbeat = get_client()
+    elasticapm_client = get_client()
     instrumentation.control.instrument()
     responses = []
-    opbeat.instrumentation_store.get_all()
+    elasticapm_client.instrumentation_store.get_all()
 
     with mock.patch("elasticapm.traces.TransactionsStore.should_collect") as should_collect:
         should_collect.return_value = False
@@ -1106,7 +1106,7 @@ def test_perf_database_render(benchmark):
         for resp in responses:
             assert resp.status_code == 200
 
-        transactions = opbeat.instrumentation_store.get_all()
+        transactions = elasticapm_client.instrumentation_store.get_all()
 
         assert len(transactions) == len(responses)
         for transaction in transactions:
@@ -1115,8 +1115,8 @@ def test_perf_database_render(benchmark):
 
 @pytest.mark.django_db
 def test_perf_database_render_no_instrumentation(benchmark):
-    opbeat = get_client()
-    opbeat.instrumentation_store.get_all()
+    elasticapm_client = get_client()
+    elasticapm_client.instrumentation_store.get_all()
     responses = []
     with mock.patch("elasticapm.traces.TransactionsStore.should_collect") as should_collect:
         should_collect.return_value = False
@@ -1129,17 +1129,17 @@ def test_perf_database_render_no_instrumentation(benchmark):
         for resp in responses:
             assert resp.status_code == 200
 
-        transactions = opbeat.instrumentation_store.get_all()
+        transactions = elasticapm_client.instrumentation_store.get_all()
         assert len(transactions) == 0
 
 
 @pytest.mark.django_db
 def test_perf_transaction_with_collection(benchmark):
-    opbeat = get_client()
-    opbeat.instrumentation_store.get_all()
+    elasticapm_client = get_client()
+    elasticapm_client.instrumentation_store.get_all()
     with mock.patch("elasticapm.traces.TransactionsStore.should_collect") as should_collect:
         should_collect.return_value = False
-        opbeat.events = []
+        elasticapm_client.events = []
 
         client = _TestClient()
 
@@ -1150,7 +1150,7 @@ def test_perf_transaction_with_collection(benchmark):
                 resp = client_get(client, reverse("render-user-template"))
                 assert resp.status_code == 200
 
-        assert len(opbeat.events) == 0
+        assert len(elasticapm_client.events) == 0
 
         # Force collection on next request
         should_collect.return_value = True
@@ -1161,29 +1161,29 @@ def test_perf_transaction_with_collection(benchmark):
             return client_get(client, reverse("render-user-template"))
 
         assert result.status_code is 200
-        assert len(opbeat.events) > 0
+        assert len(elasticapm_client.events) > 0
 
 
 @pytest.mark.django_db
 def test_perf_transaction_without_middleware(benchmark):
-    opbeat = get_client()
-    opbeat.instrumentation_store.get_all()
+    elasticapm_client = get_client()
+    elasticapm_client.instrumentation_store.get_all()
     with mock.patch("elasticapm.traces.TransactionsStore.should_collect") as should_collect:
         should_collect.return_value = False
         client = _TestClient()
-        opbeat.events = []
+        elasticapm_client.events = []
         for i in range(10):
             resp = client_get(client, reverse("render-user-template"))
             assert resp.status_code == 200
 
-        assert len(opbeat.events) == 0
+        assert len(elasticapm_client.events) == 0
 
         @benchmark
         def result():
             # Code to be measured
             return client_get(client, reverse("render-user-template"))
 
-        assert len(opbeat.events) == 0
+        assert len(elasticapm_client.events) == 0
 
 
 class DjangoManagementCommandTest(TestCase):

@@ -123,7 +123,7 @@ class TransformTest(TestCase):
 
     def test_custom_repr(self):
         class Foo(object):
-            def __opbeat__(self):
+            def __elasticapm__(self):
                 return 'example'
 
         x = Foo()

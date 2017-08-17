@@ -256,7 +256,7 @@ def test_psycopg2_register_json(postgres_connection):
 
 @pytest.mark.skipif(travis_and_psycopg2,
                     reason="Requires postgres server. Only runs on travisci.")
-def test_psycopg2_tracing_outside_of_opbeat_transaction(postgres_connection):
+def test_psycopg2_tracing_outside_of_elasticapm_transaction(postgres_connection):
     client = get_client()
     control.instrument()
     cursor = postgres_connection.cursor()

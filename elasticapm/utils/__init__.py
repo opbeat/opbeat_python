@@ -48,14 +48,14 @@ def varmap(func, var, context=None, name=None):
     return ret
 
 
-def disabled_due_to_debug(opbeat_config, debug):
+def disabled_due_to_debug(config, debug):
     """
     Compares module and app configs to determine whether to log to Opbeat
-    :param opbeat_config: Dictionary containing module config
+    :param config: Dictionary containing module config
     :param debug: Boolean denoting app DEBUG state
     :return: Boolean True if logging is disabled
     """
-    return debug and not opbeat_config.get('DEBUG', False)
+    return debug and not config.get('DEBUG', False)
 
 
 def get_name_from_func(func):
