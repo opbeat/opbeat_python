@@ -1,5 +1,5 @@
 """
-opbeat.contrib.pylons
+elasticapm.contrib.pylons
 ~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat
@@ -19,7 +19,7 @@ def list_from_setting(config, setting):
     return value.split()
 
 
-class Opbeat(Middleware):
+class ElasticAPM(Middleware):
     def __init__(self, app, config, client_cls=Client):
         client = client_cls(
             servers=list_from_setting(config, 'elasticapm.servers'),
@@ -30,4 +30,4 @@ class Opbeat(Middleware):
             include_paths=list_from_setting(config, 'elasticapm.include_paths'),
             exclude_paths=list_from_setting(config, 'elasticapm.exclude_paths'),
         )
-        super(Opbeat, self).__init__(app, client)
+        super(ElasticAPM, self).__init__(app, client)

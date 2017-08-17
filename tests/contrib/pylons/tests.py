@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from elasticapm.contrib.pylons import Opbeat
+from elasticapm.contrib.pylons import ElasticAPM
 from tests.utils.compat import TestCase
 
 
@@ -18,4 +18,4 @@ class MiddlewareTest(TestCase):
             'elasticapm.app_name': 'p' * 32,
             'elasticapm.secret_token': 'a' * 32,
         }
-        middleware = Opbeat(self.app, config)
+        middleware = ElasticAPM(self.app, config)
