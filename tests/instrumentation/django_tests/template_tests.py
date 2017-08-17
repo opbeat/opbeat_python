@@ -39,7 +39,7 @@ class TracesTest(TestCase):
     def test_template_rendering(self, should_collect):
         should_collect.return_value = False
         with self.settings(MIDDLEWARE_CLASSES=[
-            'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware']):
+            'elasticapm.contrib.django.middleware.TracingMiddleware']):
             self.client.get(reverse('render-heavy-template'))
             self.client.get(reverse('render-heavy-template'))
             self.client.get(reverse('render-heavy-template'))
@@ -72,7 +72,7 @@ class TracesTest(TestCase):
     def test_template_rendering_django18_jinja2(self, should_collect):
         should_collect.return_value = False
         with self.settings(MIDDLEWARE_CLASSES=[
-                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware'],
+                'elasticapm.contrib.django.middleware.TracingMiddleware'],
                 TEMPLATES=TEMPLATES
             ):
             self.client.get(reverse('render-jinja2-template'))

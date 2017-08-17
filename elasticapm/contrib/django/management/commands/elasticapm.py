@@ -240,7 +240,7 @@ class Command(BaseCommand):
         middleware = list(settings.MIDDLEWARE_CLASSES)
         try:
             pos = middleware.index(
-                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware'
+                'elasticapm.contrib.django.middleware.TracingMiddleware'
             )
             if pos == 0:
                 self.write(
@@ -265,7 +265,7 @@ class Command(BaseCommand):
                 '\n'
                 'Add it to your MIDDLEWARE_CLASSES like this:\n\n'
                 '    MIDDLEWARE_CLASSES = (\n'
-                '        "elasticapm.contrib.django.middleware.OpbeatAPMMiddleware",\n'
+                '        "elasticapm.contrib.django.middleware.TracingMiddleware",\n'
                 '        # your other middleware classes\n'
                 '    )\n'
             )

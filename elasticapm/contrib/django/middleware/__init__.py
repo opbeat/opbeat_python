@@ -41,7 +41,7 @@ def _is_ignorable_404(uri):
     return any(pattern.search(uri) for pattern in urls)
 
 
-class Opbeat404CatchMiddleware(MiddlewareMixin):
+class Catch404Middleware(MiddlewareMixin):
     def process_response(self, request, response):
         if (response.status_code != 404 or
                 _is_ignorable_404(request.get_full_path())):
@@ -105,21 +105,21 @@ def process_response_wrapper(wrapped, instance, args, kwargs):
         return response
 
 
-class OpbeatAPMMiddleware(MiddlewareMixin):
-    _opbeat_instrumented = False
+class TracingMiddleware(MiddlewareMixin):
+    _elasticapm_instrumented = False
     _instrumenting_lock = threading.Lock()
 
     def __init__(self, *args, **kwargs):
-        super(OpbeatAPMMiddleware, self).__init__(*args, **kwargs)
+        super(TracingMiddleware, self).__init__(*args, **kwargs)
         self.client = get_client()
 
-        if not self._opbeat_instrumented:
+        if not self._elasticapm_instrumented:
             with self._instrumenting_lock:
-                if not self._opbeat_instrumented:
+                if not self._elasticapm_instrumented:
                     if self.client.instrument_django_middleware:
                         self.instrument_middlewares()
 
-                    OpbeatAPMMiddleware._opbeat_instrumented = True
+                    TracingMiddleware._elasticapm_instrumented = True
 
     def instrument_middlewares(self):
         if getattr(django_settings, 'MIDDLEWARE_CLASSES', None):
@@ -193,19 +193,19 @@ class OpbeatAPMMiddleware(MiddlewareMixin):
         return response
 
 
-class OpbeatResponseErrorIdMiddleware(MiddlewareMixin):
+class ErrorIdMiddleware(MiddlewareMixin):
     """
-    Appends the X-Opbeat-ID response header for referencing a message within
+    Appends the X-ElasticAPM-ErrorId response header for referencing a message within
     the Opbeat datastore.
     """
     def process_response(self, request, response):
         if not getattr(request, '_elasticapm', None):
             return response
-        response['X-Opbeat-ID'] = request._elasticapm['id']
+        response['X-ElasticAPM-ErrorId'] = request._elasticapm['id']
         return response
 
 
-class OpbeatLogMiddleware(MiddlewareMixin):
+class LogMiddleware(MiddlewareMixin):
     # Create a thread local variable to store the session in for logging
     thread = threading.local()
 

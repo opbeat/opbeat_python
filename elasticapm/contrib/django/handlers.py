@@ -28,10 +28,10 @@ class OpbeatHandler(BaseOpbeatHandler):
     client = property(_get_client)
 
     def _emit(self, record):
-        from elasticapm.contrib.django.middleware import OpbeatLogMiddleware
+        from elasticapm.contrib.django.middleware import LogMiddleware
 
         # Fetch the request from a threadlocal variable, if available
-        request = getattr(OpbeatLogMiddleware.thread, 'request', None)
+        request = getattr(LogMiddleware.thread, 'request', None)
         request = getattr(record, 'request', request)
 
         return super(OpbeatHandler, self)._emit(record, request=request)
