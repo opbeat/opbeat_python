@@ -164,7 +164,7 @@ setup_kwargs = dict(
     include_package_data=True,
     entry_points={
         'paste.filter_app_factory': [
-            'elasticapm = elasticapm.contrib.paste:opbeat_filter_factory',
+            'elasticapm = elasticapm.contrib.paste:filter_factory',
         ],
     },
     classifiers=[

@@ -1,5 +1,5 @@
 """
-opbeat.contrib.celery
+elasticapm.contrib.celery
 ~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat

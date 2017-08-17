@@ -1,5 +1,5 @@
 """
-opbeat.contrib.django.middleware.wsgi
+elasticapm.contrib.django.middleware.wsgi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat

@@ -179,7 +179,7 @@ def exception_handler(request=None, **kwargs):
                     getattr(django_settings, 'ELASTICAPM', {}),
                     django_settings.DEBUG
                 )
-                or getattr(exc_info[1], 'skip_opbeat', False)
+                or getattr(exc_info[1], 'skip_elasticapm', False)
             ):
                 return
 

@@ -1,5 +1,5 @@
 """
-opbeat.contrib.async_worker
+elasticapm.contrib.async_worker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat
@@ -50,7 +50,7 @@ class AsyncWorker(object):
                 size = self._queue.qsize()
 
                 six.print_(
-                    "PID %i: Opbeat is attempting to send %i pending messages" % (
+                    "PID %i: ElasticAPM is attempting to send %i pending messages" % (
                         os.getpid(),
                         size,
                     )
@@ -141,13 +141,13 @@ class AsyncWorker(object):
             time.sleep(0)
 
 
-class OpbeatWorker(object):
+class Worker(object):
     """
-    A WSGI middleware which provides ``environ['opbeat.worker']``
+    A WSGI middleware which provides ``environ['elasticapm.worker']``
     that can be used by clients to process asynchronous tasks.
 
     >>> from elasticapm.base import Client
-    >>> application = OpbeatWorker(application)
+    >>> application = Worker(application)
     """
     def __init__(self, application):
         self.application = application

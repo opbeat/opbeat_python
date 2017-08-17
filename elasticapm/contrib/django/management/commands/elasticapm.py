@@ -25,7 +25,7 @@ white = termcolors.make_style(opts=('bold',), fg='white')
 yellow = termcolors.make_style(opts=('bold',), fg='yellow')
 
 
-class OpbeatTestException(Exception):
+class TestException(Exception):
     pass
 
 
@@ -133,7 +133,7 @@ class Command(BaseCommand):
             )(self, subcommand, **options)
 
     def handle_test(self, command, **options):
-        """Send a test error to Opbeat"""
+        """Send a test error to APM Server"""
         self.write(LOGO, cyan)
         config = get_client_config()
         # can't be async for testing
@@ -148,7 +148,7 @@ class Command(BaseCommand):
         client.state.logger = client.logger
         client.state.error_logger = client.error_logger
         self.write(
-            "Trying to send a test error to Opbeat using these settings:\n\n"
+            "Trying to send a test error to APM Server using these settings:\n\n"
             "APP_NAME:\t\t\t%s\n"
             "SECRET_TOKEN:\t\t%s\n"
             "SERVERS:\t\t%s\n\n" % (
@@ -159,8 +159,8 @@ class Command(BaseCommand):
         )
 
         try:
-            raise OpbeatTestException('Hi there!')
-        except OpbeatTestException as e:
+            raise TestException('Hi there!')
+        except TestException as e:
             result = client.capture_exception()
             if not client.error_logger.errors:
                 self.write(
@@ -200,8 +200,8 @@ class Command(BaseCommand):
             if getattr(settings, 'ELASTICAPM', {}).get('DEBUG'):
                 self.write(
                     'Note: even though you are running in DEBUG mode, we will '
-                    'send data to Opbeat, because you set ELASTICAPM["DEBUG"] to '
-                    'True. You can disable Opbeat while in DEBUG mode like this'
+                    'send data to the APM Server, because you set ELASTICAPM["DEBUG"] to '
+                    'True. You can disable ElasticAPM while in DEBUG mode like this'
                     '\n\n',
                     yellow
                 )
@@ -214,13 +214,13 @@ class Command(BaseCommand):
                 )
             else:
                 self.write(
-                    'Looks like you\'re running in DEBUG mode. Opbeat will NOT '
+                    'Looks like you\'re running in DEBUG mode. ElasticAPM will NOT '
                     'gather any data while DEBUG is set to True.\n\n',
                     red,
                 )
                 self.write(
-                    'If you want to test Opbeat while DEBUG is set to True, you'
-                    ' can force Opbeat to gather data by setting'
+                    'If you want to test ElasticAPM while DEBUG is set to True, you'
+                    ' can force ElasticAPM to gather data by setting'
                     ' ELASTICAPM["DEBUG"] to True, like this\n\n'
                     '   ELASTICAPM = {\n'
                     '       "DEBUG": True,\n'
@@ -243,22 +243,22 @@ class Command(BaseCommand):
             )
             if pos == 0:
                 self.write(
-                    'Opbeat APM middleware is set! Awesome!',
+                    'Tracing middleware is configured! Awesome!',
                     green
                 )
             else:
                 self.write(
-                    'Opbeat APM middleware is set, but not at the first '
+                    'Tracing middleware is configured, but not at the first '
                     'position\n',
                     yellow
                 )
                 self.write(
-                    'Opbeat APM works best if you add it at the top of your '
+                    'ElasticAPM works best if you add it at the top of your '
                     'MIDDLEWARE_CLASSES'
                 )
         except ValueError:
             self.write(
-                'Opbeat APM middleware not set!', red
+                'Tracing middleware not set!', red
             )
             self.write(
                 '\n'

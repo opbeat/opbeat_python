@@ -1,5 +1,5 @@
 """
-opbeat.contrib.django
+elasticapm.contrib.django
 ~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat
@@ -9,6 +9,6 @@ Large portions are
 :license: BSD, see LICENSE for more details.
 """
 
-default_app_config = 'elasticapm.contrib.django.apps.OpbeatConfig'
+default_app_config = 'elasticapm.contrib.django.apps.ElasticAPMConfig'
 
 from elasticapm.contrib.django.client import *

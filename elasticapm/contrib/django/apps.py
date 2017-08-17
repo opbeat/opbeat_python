@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 
-class OpbeatConfig(AppConfig):
+class ElasticAPMConfig(AppConfig):
     name = 'elasticapm.contrib.django'
     label = 'elasticapm.contrib.django'
     verbose_name = 'ElasticAPM'

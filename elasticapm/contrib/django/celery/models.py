@@ -1,5 +1,5 @@
 """
-opbeat.contrib.django.celery.models
+elasticapm.contrib.django.celery.models
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2011-2012 Opbeat
