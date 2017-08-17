@@ -1,6 +1,6 @@
-def register_opbeat(client, worker):
-    """Given a Opbeat client and an RQ worker, registers exception handlers
-    with the worker so exceptions are logged to Opbeat.
+def register_elasticapm(client, worker):
+    """Given an ElasticAPM client and an RQ worker, registers exception handlers
+    with the worker so exceptions are logged to the apm server.
 
     E.g.:
 
@@ -8,11 +8,11 @@ def register_opbeat(client, worker):
     from elasticapm.contrib.rq import register_opbeat
     
     worker = Worker(map(Queue, listen))
-    register_opbeat(client, worker)
+    register_elasticapm(client, worker)
     worker.work()
 
     """
-    def send_to_opbeat(job, *exc_info):
+    def send_to_server(job, *exc_info):
         client.capture_exception(
             exc_info=exc_info,
             extra={
@@ -24,4 +24,4 @@ def register_opbeat(client, worker):
             }
         )
 
-    worker.push_exc_handler(send_to_opbeat)
+    worker.push_exc_handler(send_to_server)
