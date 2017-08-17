@@ -1,5 +1,5 @@
 """
-opbeat.contrib.zerorpc
+elasticapm.contrib.zerorpc
 ~~~~~~~~~~~~~~~~~~~~~
 
 :copyright: (c) 2012 by the Sentry Team, see AUTHORS for more details.
@@ -11,13 +11,13 @@ import inspect
 from elasticapm.base import Client
 
 
-class OpbeatMiddleware(object):
-    """Opbeat/opbeat middleware for ZeroRPC.
+class Middleware(object):
+    """ElasticAPM middleware for ZeroRPC.
 
-    >>> elasticapm = OpbeatMiddleware(app_name='..', secret_token='...')
+    >>> elasticapm = Middleware(app_name='..', secret_token='...')
     >>> zerorpc.Context.get_instance().register_middleware(elasticapm)
 
-    Exceptions detected server-side in ZeroRPC will be submitted to Opbeat (and
+    Exceptions detected server-side in ZeroRPC will be submitted to the apm server (and
     propagated to the client as well).
     """
 
@@ -31,7 +31,7 @@ class OpbeatMiddleware(object):
                   instantiated from the keyword arguments.
 
         """
-        self._opbeat_client = client or Client(**kwargs)
+        self._elasticapm_client = client or Client(**kwargs)
         self._hide_zerorpc_frames = hide_zerorpc_frames
 
     def server_inspect_exception(self, req_event, rep_event, task_ctx, exc_info):
@@ -59,7 +59,7 @@ class OpbeatMiddleware(object):
                     break
                 traceback = traceback.tb_next
 
-        self._opbeat_client.capture_exception(
+        self._elasticapm_client.capture_exception(
             exc_info,
             extra=task_ctx
         )

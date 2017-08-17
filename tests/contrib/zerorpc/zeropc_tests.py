@@ -6,7 +6,7 @@ import tempfile
 
 import pytest
 
-from elasticapm.contrib.zerorpc import OpbeatMiddleware
+from elasticapm.contrib.zerorpc import Middleware
 from tests.helpers import get_tempstoreclient
 from tests.utils.compat import TestCase
 
@@ -27,7 +27,7 @@ class ZeroRPCTest(TestCase):
         ))
 
         self._opbeat = get_tempstoreclient()
-        zerorpc.Context.get_instance().register_middleware(OpbeatMiddleware(
+        zerorpc.Context.get_instance().register_middleware(Middleware(
                     client=self._opbeat
         ))
 
