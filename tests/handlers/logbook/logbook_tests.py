@@ -1,6 +1,6 @@
 import logbook
 
-from opbeat.handlers.logbook import OpbeatHandler
+from elasticapm.handlers.logbook import OpbeatHandler
 from tests.helpers import get_tempstoreclient
 from tests.utils.compat import TestCase
 
@@ -8,7 +8,7 @@ from tests.utils.compat import TestCase
 class LogbookHandlerTest(TestCase):
     def setUp(self):
         self.logger = logbook.Logger(__name__)
-        self.client = get_tempstoreclient(include_paths=['tests', 'opbeat'])
+        self.client = get_tempstoreclient(include_paths=['tests', 'elasticapm'])
         self.handler = OpbeatHandler(self.client)
 
     def test_logger_error_level(self):

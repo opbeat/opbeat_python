@@ -26,21 +26,21 @@ from django.test.utils import override_settings
 import mock
 import pytest
 
-from opbeat import instrumentation
-from opbeat.base import Client
-from opbeat.contrib.django import DjangoClient
-from opbeat.contrib.django.handlers import OpbeatHandler
-from opbeat.contrib.django.middleware.wsgi import Opbeat
-from opbeat.contrib.django.models import client, get_client, get_client_config
-from opbeat.traces import Transaction
-from opbeat.utils import six
-from opbeat.utils.lru import LRUCache
+from elasticapm import instrumentation
+from elasticapm.base import Client
+from elasticapm.contrib.django import DjangoClient
+from elasticapm.contrib.django.handlers import OpbeatHandler
+from elasticapm.contrib.django.middleware.wsgi import Opbeat
+from elasticapm.contrib.django.models import client, get_client, get_client_config
+from elasticapm.traces import Transaction
+from elasticapm.utils import six
+from elasticapm.utils.lru import LRUCache
 
 try:
     from celery.tests.utils import with_eager_tasks
     has_with_eager_tasks = True
 except ImportError:
-    from opbeat.utils.compat import noop_decorator as with_eager_tasks
+    from elasticapm.utils.compat import noop_decorator as with_eager_tasks
     has_with_eager_tasks = False
 
 
@@ -123,7 +123,7 @@ class DjangoClientTest(TestCase):
         self.assertEquals(event['culprit'], 'tests.contrib.django.django_tests.test_signal_integration')
 
     def test_view_exception(self):
-        self.assertRaises(Exception, self.client.get, reverse('opbeat-raise-exc'))
+        self.assertRaises(Exception, self.client.get, reverse('elasticapm-raise-exc'))
 
         self.assertEquals(len(self.opbeat.events), 1)
         event = self.opbeat.events.pop(0)['errors'][0]
@@ -138,7 +138,7 @@ class DjangoClientTest(TestCase):
         with self.settings(DEBUG=True):
             self.assertRaises(
                 Exception,
-                self.client.get, reverse('opbeat-raise-exc')
+                self.client.get, reverse('elasticapm-raise-exc')
             )
         self.assertEquals(len(self.opbeat.events), 0)
 
@@ -152,7 +152,7 @@ class DjangoClientTest(TestCase):
         ):
             self.assertRaises(
                 Exception,
-                self.client.get, reverse('opbeat-raise-exc')
+                self.client.get, reverse('elasticapm-raise-exc')
             )
         self.assertEquals(len(self.opbeat.events), 1)
 
@@ -161,7 +161,7 @@ class DjangoClientTest(TestCase):
         user.set_password('admin')
         user.save()
 
-        self.assertRaises(Exception, self.client.get, reverse('opbeat-raise-exc'))
+        self.assertRaises(Exception, self.client.get, reverse('elasticapm-raise-exc'))
 
         self.assertEquals(len(self.opbeat.events), 1)
         event = self.opbeat.events.pop(0)['errors'][0]
@@ -174,7 +174,7 @@ class DjangoClientTest(TestCase):
 
         self.assertTrue(self.client.login(username='admin', password='admin'))
 
-        self.assertRaises(Exception, self.client.get, reverse('opbeat-raise-exc'))
+        self.assertRaises(Exception, self.client.get, reverse('elasticapm-raise-exc'))
 
         self.assertEquals(len(self.opbeat.events), 1)
         event = self.opbeat.events.pop(0)['errors'][0]
@@ -198,7 +198,7 @@ class DjangoClientTest(TestCase):
         with mock.patch("django.contrib.auth.models.User.is_authenticated") as is_authenticated:
             is_authenticated.side_effect = DatabaseError("Test Exception")
             self.assertRaises(Exception, self.client.get,
-                              reverse('opbeat-raise-exc'))
+                              reverse('elasticapm-raise-exc'))
 
         self.assertEquals(len(self.opbeat.events), 1)
         event = self.opbeat.events.pop(0)['errors'][0]
@@ -216,7 +216,7 @@ class DjangoClientTest(TestCase):
             user.set_password('admin')
             user.save()
             self.assertTrue(self.client.login(username='admin', password='admin'))
-            self.assertRaises(Exception, self.client.get, reverse('opbeat-raise-exc'))
+            self.assertRaises(Exception, self.client.get, reverse('elasticapm-raise-exc'))
 
             self.assertEquals(len(self.opbeat.events), 1)
             event = self.opbeat.events.pop(0)['errors'][0]
@@ -237,7 +237,7 @@ class DjangoClientTest(TestCase):
             if m != 'django.contrib.auth.middleware.AuthenticationMiddleware'
         ]):
             with pytest.raises(Exception):
-                resp = self.client.get(reverse('opbeat-raise-exc'))
+                resp = self.client.get(reverse('elasticapm-raise-exc'))
 
         self.assertEquals(len(self.opbeat.events), 1)
         event = self.opbeat.events.pop(0)['errors'][0]
@@ -250,14 +250,14 @@ class DjangoClientTest(TestCase):
         ]):
             self.assertRaises(Exception,
                               self.client.get,
-                              reverse('opbeat-raise-exc'))
+                              reverse('elasticapm-raise-exc'))
         self.assertEquals(len(self.opbeat.events), 1)
         event = self.opbeat.events.pop(0)['errors'][0]
         assert event['context']['user'] == {}
 
     def test_request_middleware_exception(self):
         with self.settings(MIDDLEWARE_CLASSES=['tests.contrib.django.testapp.middleware.BrokenRequestMiddleware']):
-            self.assertRaises(ImportError, self.client.get, reverse('opbeat-raise-exc'))
+            self.assertRaises(ImportError, self.client.get, reverse('elasticapm-raise-exc'))
 
             self.assertEquals(len(self.opbeat.events), 1)
             event = self.opbeat.events.pop(0)['errors'][0]
@@ -272,7 +272,7 @@ class DjangoClientTest(TestCase):
         if django.VERSION[:2] < (1, 3):
             return
         with self.settings(MIDDLEWARE_CLASSES=['tests.contrib.django.testapp.middleware.BrokenResponseMiddleware']):
-            self.assertRaises(ImportError, self.client.get, reverse('opbeat-no-error'))
+            self.assertRaises(ImportError, self.client.get, reverse('elasticapm-no-error'))
 
             self.assertEquals(len(self.opbeat.events), 1)
             event = self.opbeat.events.pop(0)['errors'][0]
@@ -288,7 +288,7 @@ class DjangoClientTest(TestCase):
             client = _TestClient(REMOTE_ADDR='127.0.0.1')
             client.handler = MockOpbeatMiddleware(MockClientHandler())
 
-            self.assertRaises(Exception, client.get, reverse('opbeat-raise-exc'))
+            self.assertRaises(Exception, client.get, reverse('elasticapm-raise-exc'))
 
             self.assertEquals(len(self.opbeat.events), 2)
             event = self.opbeat.events.pop(0)['errors'][0]
@@ -309,7 +309,7 @@ class DjangoClientTest(TestCase):
 
     def test_view_middleware_exception(self):
         with self.settings(MIDDLEWARE_CLASSES=['tests.contrib.django.testapp.middleware.BrokenViewMiddleware']):
-            self.assertRaises(ImportError, self.client.get, reverse('opbeat-raise-exc'))
+            self.assertRaises(ImportError, self.client.get, reverse('elasticapm-raise-exc'))
 
             self.assertEquals(len(self.opbeat.events), 1)
             event = self.opbeat.events.pop(0)['errors'][0]
@@ -323,7 +323,7 @@ class DjangoClientTest(TestCase):
     def test_exclude_modules_view(self):
         exclude_paths = self.opbeat.exclude_paths
         self.opbeat.exclude_paths = ['tests.views.decorated_raise_exc']
-        self.assertRaises(Exception, self.client.get, reverse('opbeat-raise-exc-decor'))
+        self.assertRaises(Exception, self.client.get, reverse('elasticapm-raise-exc-decor'))
 
         self.assertEquals(len(self.opbeat.events), 1, self.opbeat.events)
         event = self.opbeat.events.pop(0)['errors'][0]
@@ -335,7 +335,7 @@ class DjangoClientTest(TestCase):
         include_paths = self.opbeat.include_paths
         self.opbeat.include_paths = ['django.shortcuts.get_object_or_404']
 
-        self.assertRaises(Exception, self.client.get, reverse('opbeat-django-exc'))
+        self.assertRaises(Exception, self.client.get, reverse('elasticapm-django-exc'))
 
         self.assertEquals(len(self.opbeat.events), 1)
         event = self.opbeat.events.pop(0)['errors'][0]
@@ -361,7 +361,7 @@ class DjangoClientTest(TestCase):
         ):
             self.assertRaises(
                 TemplateSyntaxError,
-                self.client.get, reverse('opbeat-template-exc')
+                self.client.get, reverse('elasticapm-template-exc')
             )
 
         self.assertEquals(len(self.opbeat.events), 1)
@@ -400,7 +400,7 @@ class DjangoClientTest(TestCase):
         assert 'exception' not in event
 
     def test_404_middleware(self):
-        with self.settings(MIDDLEWARE_CLASSES=['opbeat.contrib.django.middleware.Opbeat404CatchMiddleware']):
+        with self.settings(MIDDLEWARE_CLASSES=['elasticapm.contrib.django.middleware.Opbeat404CatchMiddleware']):
             resp = self.client.get('/non-existant-page')
             self.assertEquals(resp.status_code, 404)
 
@@ -421,7 +421,7 @@ class DjangoClientTest(TestCase):
                         reason='new-style middlewares')
     def test_404_new_style_middleware(self):
         with self.settings(MIDDLEWARE_CLASSES=None, MIDDLEWARE=[
-                'opbeat.contrib.django.middleware.Opbeat404CatchMiddleware']):
+                'elasticapm.contrib.django.middleware.Opbeat404CatchMiddleware']):
             resp = self.client.get('/non-existant-page')
             self.assertEquals(resp.status_code, 404)
 
@@ -441,7 +441,7 @@ class DjangoClientTest(TestCase):
     def test_404_middleware_with_debug(self):
         with self.settings(
                 MIDDLEWARE_CLASSES=[
-                    'opbeat.contrib.django.middleware.Opbeat404CatchMiddleware'
+                    'elasticapm.contrib.django.middleware.Opbeat404CatchMiddleware'
                 ],
                 DEBUG=True,
         ):
@@ -455,7 +455,7 @@ class DjangoClientTest(TestCase):
         with self.settings(
                 MIDDLEWARE_CLASSES=None,
                 MIDDLEWARE=[
-                    'opbeat.contrib.django.middleware.Opbeat404CatchMiddleware'
+                    'elasticapm.contrib.django.middleware.Opbeat404CatchMiddleware'
                 ],
                 DEBUG=True,
         ):
@@ -465,8 +465,8 @@ class DjangoClientTest(TestCase):
 
     def test_response_error_id_middleware(self):
         with self.settings(MIDDLEWARE_CLASSES=[
-                'opbeat.contrib.django.middleware.OpbeatResponseErrorIdMiddleware',
-                'opbeat.contrib.django.middleware.Opbeat404CatchMiddleware']):
+                'elasticapm.contrib.django.middleware.OpbeatResponseErrorIdMiddleware',
+                'elasticapm.contrib.django.middleware.Opbeat404CatchMiddleware']):
             resp = self.client.get('/non-existant-page')
             self.assertEquals(resp.status_code, 404)
             headers = dict(resp.items())
@@ -479,8 +479,8 @@ class DjangoClientTest(TestCase):
                         reason='new-style middlewares')
     def test_response_error_id_middleware_new_style(self):
         with self.settings(MIDDLEWARE_CLASSES=None, MIDDLEWARE=[
-                'opbeat.contrib.django.middleware.OpbeatResponseErrorIdMiddleware',
-                'opbeat.contrib.django.middleware.Opbeat404CatchMiddleware']):
+                'elasticapm.contrib.django.middleware.OpbeatResponseErrorIdMiddleware',
+                'elasticapm.contrib.django.middleware.Opbeat404CatchMiddleware']):
             resp = self.client.get('/non-existant-page')
             self.assertEquals(resp.status_code, 404)
             headers = dict(resp.items())
@@ -491,7 +491,7 @@ class DjangoClientTest(TestCase):
 
     def test_get_client(self):
         self.assertEquals(get_client(), get_client())
-        self.assertEquals(get_client('opbeat.base.Client').__class__, Client)
+        self.assertEquals(get_client('elasticapm.base.Client').__class__, Client)
         self.assertEquals(get_client(), self.opbeat)
 
         self.assertEquals(get_client('%s.%s' % (self.opbeat.__class__.__module__, self.opbeat.__class__.__name__)), self.opbeat)
@@ -636,9 +636,9 @@ class DjangoClientTest(TestCase):
     def test_transaction_metrics(self):
         self.opbeat.instrumentation_store.get_all()  # clear the store
         with self.settings(MIDDLEWARE_CLASSES=[
-                'opbeat.contrib.django.middleware.OpbeatAPMMiddleware']):
+                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware']):
             self.assertEqual(len(self.opbeat.instrumentation_store), 0)
-            self.client.get(reverse('opbeat-no-error'))
+            self.client.get(reverse('elasticapm-no-error'))
             self.assertEqual(len(self.opbeat.instrumentation_store), 1)
 
             transactions = self.opbeat.instrumentation_store.get_all()
@@ -654,9 +654,9 @@ class DjangoClientTest(TestCase):
     def test_transaction_metrics_new_style_middleware(self):
         self.opbeat.instrumentation_store.get_all()  # clear the store
         with self.settings(MIDDLEWARE_CLASSES=None, MIDDLEWARE=[
-                'opbeat.contrib.django.middleware.OpbeatAPMMiddleware']):
+                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware']):
             self.assertEqual(len(self.opbeat.instrumentation_store), 0)
-            self.client.get(reverse('opbeat-no-error'))
+            self.client.get(reverse('elasticapm-no-error'))
             self.assertEqual(len(self.opbeat.instrumentation_store), 1)
 
             transactions = self.opbeat.instrumentation_store.get_all()
@@ -676,12 +676,12 @@ class DjangoClientTest(TestCase):
 
         with self.settings(
             MIDDLEWARE_CLASSES=[
-                'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
+                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware',
                 'django.middleware.common.CommonMiddleware',
             ],
             APPEND_SLASH=True,
         ):
-            self.client.get(reverse('opbeat-no-error-slash')[:-1])
+            self.client.get(reverse('elasticapm-no-error-slash')[:-1])
         transactions = self.opbeat.instrumentation_store.get_all()
         self.assertIn(
             transactions[0]['name'], (
@@ -704,12 +704,12 @@ class DjangoClientTest(TestCase):
         with self.settings(
             MIDDLEWARE_CLASSES=None,
             MIDDLEWARE=[
-                'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
+                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware',
                 'django.middleware.common.CommonMiddleware',
             ],
             APPEND_SLASH=True,
         ):
-            self.client.get(reverse('opbeat-no-error-slash')[:-1])
+            self.client.get(reverse('elasticapm-no-error-slash')[:-1])
         transactions = self.opbeat.instrumentation_store.get_all()
         self.assertIn(
             transactions[0]['name'], (
@@ -729,12 +729,12 @@ class DjangoClientTest(TestCase):
 
         with self.settings(
             MIDDLEWARE_CLASSES=[
-                'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
+                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware',
                 'django.middleware.common.CommonMiddleware',
             ],
             PREPEND_WWW=True,
         ):
-            self.client.get(reverse('opbeat-no-error'))
+            self.client.get(reverse('elasticapm-no-error'))
         transactions = self.opbeat.instrumentation_store.get_all()
         self.assertEqual(
             transactions[0]['name'],
@@ -753,12 +753,12 @@ class DjangoClientTest(TestCase):
         with self.settings(
             MIDDLEWARE_CLASSES=None,
             MIDDLEWARE=[
-                'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
+                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware',
                 'django.middleware.common.CommonMiddleware',
             ],
             PREPEND_WWW=True,
         ):
-            self.client.get(reverse('opbeat-no-error'))
+            self.client.get(reverse('elasticapm-no-error'))
         transactions = self.opbeat.instrumentation_store.get_all()
         self.assertEqual(
             transactions[0]['name'],
@@ -771,7 +771,7 @@ class DjangoClientTest(TestCase):
         # enable middleware wrapping
         client = get_client()
         client.instrument_django_middleware = True
-        from opbeat.contrib.django.middleware import OpbeatAPMMiddleware
+        from elasticapm.contrib.django.middleware import OpbeatAPMMiddleware
         OpbeatAPMMiddleware._opbeat_instrumented = False
 
         s = Site.objects.get(pk=1)
@@ -779,7 +779,7 @@ class DjangoClientTest(TestCase):
 
         with self.settings(
             MIDDLEWARE_CLASSES=[
-                'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
+                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware',
                 'django.contrib.redirects.middleware.RedirectFallbackMiddleware',
             ],
         ):
@@ -800,7 +800,7 @@ class DjangoClientTest(TestCase):
         # enable middleware wrapping
         client = get_client()
         client.instrument_django_middleware = True
-        from opbeat.contrib.django.middleware import OpbeatAPMMiddleware
+        from elasticapm.contrib.django.middleware import OpbeatAPMMiddleware
         OpbeatAPMMiddleware._opbeat_instrumented = False
 
         s = Site.objects.get(pk=1)
@@ -809,7 +809,7 @@ class DjangoClientTest(TestCase):
         with self.settings(
             MIDDLEWARE_CLASSES=None,
             MIDDLEWARE=[
-                'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
+                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware',
                 'django.contrib.redirects.middleware.RedirectFallbackMiddleware',
             ],
         ):
@@ -836,11 +836,11 @@ class DjangoClientTest(TestCase):
         self.opbeat.instrumentation_store.get_all()  # clear the store
         with self.settings(
             MIDDLEWARE_CLASSES=[
-                'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
+                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware',
                 'tests.contrib.django.testapp.middleware.MetricsNameOverrideMiddleware',
             ]
         ):
-            self.client.get(reverse('opbeat-no-error'))
+            self.client.get(reverse('elasticapm-no-error'))
         transactions = self.opbeat.instrumentation_store.get_all()
         self.assertEqual(
             transactions[0]['name'],
@@ -851,7 +851,7 @@ class DjangoClientTest(TestCase):
         self.opbeat.instrumentation_store.get_all()  # clear the store
         with self.settings(
                 MIDDLEWARE_CLASSES=[
-                    'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
+                    'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware',
                 ]
         ):
             self.client.get('/i-dont-exist/')
@@ -877,7 +877,7 @@ class DjangoClientNoTempTest(TestCase):
             filter_exception_types=['KeyError', 'tests.contrib.django.fake1.FakeException']
         )
 
-    @mock.patch('opbeat.contrib.django.DjangoClient.send_encoded')
+    @mock.patch('elasticapm.contrib.django.DjangoClient.send_encoded')
     def test_filter_no_match(self, send_encoded):
         try:
             raise ValueError('foo')
@@ -886,7 +886,7 @@ class DjangoClientNoTempTest(TestCase):
 
         self.assertEquals(send_encoded.call_count, 1)
 
-    @mock.patch('opbeat.contrib.django.DjangoClient.send_encoded')
+    @mock.patch('elasticapm.contrib.django.DjangoClient.send_encoded')
     def test_filter_matches_type(self, send_encoded):
         try:
             raise KeyError('foo')
@@ -895,7 +895,7 @@ class DjangoClientNoTempTest(TestCase):
 
         self.assertEquals(send_encoded.call_count, 0)
 
-    @mock.patch('opbeat.contrib.django.DjangoClient.send_encoded')
+    @mock.patch('elasticapm.contrib.django.DjangoClient.send_encoded')
     def test_filter_matches_type_but_not_module(self, send_encoded):
         try:
             from tests.contrib.django.fake2 import FakeException
@@ -905,7 +905,7 @@ class DjangoClientNoTempTest(TestCase):
 
         self.assertEquals(send_encoded.call_count, 1)
 
-    @mock.patch('opbeat.contrib.django.DjangoClient.send_encoded')
+    @mock.patch('elasticapm.contrib.django.DjangoClient.send_encoded')
     def test_filter_matches_type_and_module(self, send_encoded):
         try:
             from tests.contrib.django.fake1 import FakeException
@@ -915,7 +915,7 @@ class DjangoClientNoTempTest(TestCase):
 
         self.assertEquals(send_encoded.call_count, 0)
 
-    @mock.patch('opbeat.contrib.django.DjangoClient.send_encoded')
+    @mock.patch('elasticapm.contrib.django.DjangoClient.send_encoded')
     def test_filter_matches_module_only(self, send_encoded):
         try:
             from tests.contrib.django.fake1 import OtherFakeException
@@ -973,13 +973,13 @@ def test_stacktraces_have_templates():
 
     TEMPLATE_DEBUG = django.VERSION < (1, 9)
 
-    with mock.patch("opbeat.traces.TransactionsStore.should_collect") as should_collect:
+    with mock.patch("elasticapm.traces.TransactionsStore.should_collect") as should_collect:
         should_collect.return_value = False
         TEMPLATES_copy = deepcopy(settings.TEMPLATES)
         TEMPLATES_copy[0]['OPTIONS']['debug'] = TEMPLATE_DEBUG
         with override_settings(
             MIDDLEWARE_CLASSES=[
-                'opbeat.contrib.django.middleware.OpbeatAPMMiddleware'
+                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware'
             ],
             TEMPLATE_DEBUG=TEMPLATE_DEBUG,
             TEMPLATES=TEMPLATES_copy
@@ -1019,10 +1019,10 @@ def test_stacktrace_filtered_for_opbeat():
     Transaction._lrucache = LRUCache(maxsize=5000)
 
     with mock.patch(
-            "opbeat.traces.TransactionsStore.should_collect") as should_collect:
+            "elasticapm.traces.TransactionsStore.should_collect") as should_collect:
         should_collect.return_value = False
         with override_settings(MIDDLEWARE_CLASSES=[
-            'opbeat.contrib.django.middleware.OpbeatAPMMiddleware']):
+            'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware']):
             resp = client.get(reverse("render-heavy-template"))
     assert resp.status_code == 200
 
@@ -1043,10 +1043,10 @@ def test_perf_template_render(benchmark):
     opbeat = get_client()
     responses = []
     instrumentation.control.instrument()
-    with mock.patch("opbeat.traces.TransactionsStore.should_collect") as should_collect:
+    with mock.patch("elasticapm.traces.TransactionsStore.should_collect") as should_collect:
         should_collect.return_value = False
         with override_settings(MIDDLEWARE_CLASSES=[
-            'opbeat.contrib.django.middleware.OpbeatAPMMiddleware']):
+            'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware']):
             benchmark(lambda: responses.append(
                 client_get(client, reverse("render-heavy-template"))
             ))
@@ -1068,7 +1068,7 @@ def test_perf_template_render_no_middleware(benchmark):
     responses = []
     instrumentation.control.instrument()
     with mock.patch(
-            "opbeat.traces.TransactionsStore.should_collect") as should_collect:
+            "elasticapm.traces.TransactionsStore.should_collect") as should_collect:
         should_collect.return_value = False
         benchmark(lambda: responses.append(
             client_get(client, reverse("render-heavy-template"))
@@ -1089,11 +1089,11 @@ def test_perf_database_render(benchmark):
     responses = []
     opbeat.instrumentation_store.get_all()
 
-    with mock.patch("opbeat.traces.TransactionsStore.should_collect") as should_collect:
+    with mock.patch("elasticapm.traces.TransactionsStore.should_collect") as should_collect:
         should_collect.return_value = False
 
         with override_settings(MIDDLEWARE_CLASSES=[
-            'opbeat.contrib.django.middleware.OpbeatAPMMiddleware']):
+            'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware']):
             benchmark(lambda: responses.append(
                 client_get(client, reverse("render-user-template"))
             ))
@@ -1112,7 +1112,7 @@ def test_perf_database_render_no_instrumentation(benchmark):
     opbeat = get_client()
     opbeat.instrumentation_store.get_all()
     responses = []
-    with mock.patch("opbeat.traces.TransactionsStore.should_collect") as should_collect:
+    with mock.patch("elasticapm.traces.TransactionsStore.should_collect") as should_collect:
         should_collect.return_value = False
 
         client = _TestClient()
@@ -1131,14 +1131,14 @@ def test_perf_database_render_no_instrumentation(benchmark):
 def test_perf_transaction_with_collection(benchmark):
     opbeat = get_client()
     opbeat.instrumentation_store.get_all()
-    with mock.patch("opbeat.traces.TransactionsStore.should_collect") as should_collect:
+    with mock.patch("elasticapm.traces.TransactionsStore.should_collect") as should_collect:
         should_collect.return_value = False
         opbeat.events = []
 
         client = _TestClient()
 
         with override_settings(MIDDLEWARE_CLASSES=[
-            'opbeat.contrib.django.middleware.OpbeatAPMMiddleware']):
+            'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware']):
 
             for i in range(10):
                 resp = client_get(client, reverse("render-user-template"))
@@ -1162,7 +1162,7 @@ def test_perf_transaction_with_collection(benchmark):
 def test_perf_transaction_without_middleware(benchmark):
     opbeat = get_client()
     opbeat.instrumentation_store.get_all()
-    with mock.patch("opbeat.traces.TransactionsStore.should_collect") as should_collect:
+    with mock.patch("elasticapm.traces.TransactionsStore.should_collect") as should_collect:
         should_collect.return_value = False
         client = _TestClient()
         opbeat.events = []
@@ -1183,26 +1183,26 @@ def test_perf_transaction_without_middleware(benchmark):
 class DjangoManagementCommandTest(TestCase):
     @pytest.mark.skipif(django.VERSION > (1, 7),
                         reason='argparse raises CommandError in this case')
-    @mock.patch('opbeat.contrib.django.management.commands.opbeat.Command._get_argv')
+    @mock.patch('elasticapm.contrib.django.management.commands.elasticapm.Command._get_argv')
     def test_subcommand_not_set(self, argv_mock):
         stdout = six.StringIO()
-        argv_mock.return_value = ['manage.py', 'opbeat']
-        call_command('opbeat', stdout=stdout)
+        argv_mock.return_value = ['manage.py', 'elasticapm']
+        call_command('elasticapm', stdout=stdout)
         output = stdout.getvalue()
         assert 'No command specified' in output
 
-    @mock.patch('opbeat.contrib.django.management.commands.opbeat.Command._get_argv')
+    @mock.patch('elasticapm.contrib.django.management.commands.elasticapm.Command._get_argv')
     def test_subcommand_not_known(self, argv_mock):
         stdout = six.StringIO()
-        argv_mock.return_value = ['manage.py', 'opbeat']
-        call_command('opbeat', 'foo', stdout=stdout)
+        argv_mock.return_value = ['manage.py', 'elasticapm']
+        call_command('elasticapm', 'foo', stdout=stdout)
         output = stdout.getvalue()
         assert 'No such command "foo"' in output
 
     def test_settings_missing(self):
         stdout = six.StringIO()
         with self.settings(OPBEAT={}):
-            call_command('opbeat', 'check', stdout=stdout)
+            call_command('elasticapm', 'check', stdout=stdout)
         output = stdout.getvalue()
         assert 'Configuration errors detected' in output
         assert 'APP_NAME not set' in output
@@ -1211,7 +1211,7 @@ class DjangoManagementCommandTest(TestCase):
     def test_middleware_not_set(self):
         stdout = six.StringIO()
         with self.settings(MIDDLEWARE_CLASSES=()):
-            call_command('opbeat', 'check', stdout=stdout)
+            call_command('elasticapm', 'check', stdout=stdout)
         output = stdout.getvalue()
         assert 'Opbeat APM middleware not set!' in output
 
@@ -1219,21 +1219,21 @@ class DjangoManagementCommandTest(TestCase):
         stdout = six.StringIO()
         with self.settings(MIDDLEWARE_CLASSES=(
             'foo',
-            'opbeat.contrib.django.middleware.OpbeatAPMMiddleware'
+            'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware'
         )):
-            call_command('opbeat', 'check', stdout=stdout)
+            call_command('elasticapm', 'check', stdout=stdout)
         output = stdout.getvalue()
         assert 'not at the first position' in output
 
-    @mock.patch('opbeat.transport.http_urllib3.urllib3.PoolManager.urlopen')
+    @mock.patch('elasticapm.transport.http_urllib3.urllib3.PoolManager.urlopen')
     def test_test_exception(self, urlopen_mock):
         stdout = six.StringIO()
         resp = mock.Mock(status=200, getheader=lambda h: 'http://example.com')
         urlopen_mock.return_value = resp
         with self.settings(MIDDLEWARE_CLASSES=(
                 'foo',
-                'opbeat.contrib.django.middleware.OpbeatAPMMiddleware'
+                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware'
         )):
-            call_command('opbeat', 'test', stdout=stdout, stderr=stdout)
+            call_command('elasticapm', 'test', stdout=stdout, stderr=stdout)
         output = stdout.getvalue()
         assert 'http://example.com' in output

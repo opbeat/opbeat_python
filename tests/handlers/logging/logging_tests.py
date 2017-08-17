@@ -1,14 +1,14 @@
 import logging
 
-from opbeat.handlers.logging import OpbeatHandler
-from opbeat.utils.stacks import iter_stack_frames
+from elasticapm.handlers.logging import OpbeatHandler
+from elasticapm.utils.stacks import iter_stack_frames
 from tests.helpers import get_tempstoreclient
 from tests.utils.compat import TestCase
 
 
 class LoggingIntegrationTest(TestCase):
     def setUp(self):
-        self.client = get_tempstoreclient(include_paths=['tests', 'opbeat'])
+        self.client = get_tempstoreclient(include_paths=['tests', 'elasticapm'])
         self.handler = OpbeatHandler(self.client)
         self.logger = logging.getLogger(__name__)
         self.logger.handlers = []

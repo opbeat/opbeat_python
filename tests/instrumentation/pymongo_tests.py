@@ -4,8 +4,8 @@ import os
 import pymongo
 import pytest
 
-import opbeat
-import opbeat.instrumentation.control
+import elasticapm
+import elasticapm.instrumentation.control
 from tests.helpers import get_tempstoreclient
 from tests.utils.compat import TestCase
 
@@ -14,7 +14,7 @@ from tests.utils.compat import TestCase
 class InstrumentPyMongoTest(TestCase):
     def setUp(self):
         self.client = get_tempstoreclient()
-        opbeat.instrumentation.control.instrument()
+        elasticapm.instrumentation.control.instrument()
         connection_params = {'host': os.environ.get('MONGODB_HOST', 'localhost'),
                              'port': int(os.environ.get('MONGODB_PORT', 27017))}
         if pymongo.version_tuple < (3, 0):

@@ -16,7 +16,7 @@ class MockTransport(mock.MagicMock):
         self.url = url
 
     async def send(self, data, headers, timeout):
-        from opbeat.transport.base import TransportException
+        from elasticapm.transport.base import TransportException
         self.data = data
         if self.url == urlparse('http://error'):
             raise TransportException('', data, False)
@@ -25,7 +25,7 @@ class MockTransport(mock.MagicMock):
 
 @pytest.mark.asyncio
 async def test_client_success():
-    from opbeat.contrib.asyncio import Client
+    from elasticapm.contrib.asyncio import Client
 
     client = Client(
         servers=['http://localhost'],
@@ -46,8 +46,8 @@ async def test_client_success():
 
 @pytest.mark.asyncio
 async def test_client_failure():
-    from opbeat.contrib.asyncio import Client
-    from opbeat.transport.base import TransportException
+    from elasticapm.contrib.asyncio import Client
+    from elasticapm.transport.base import TransportException
 
     client = Client(
         servers=['http://error'],
@@ -67,15 +67,15 @@ async def test_client_failure():
 
 @pytest.mark.asyncio
 async def test_client_failure_stdlib_exception(mocker):
-    from opbeat.contrib.asyncio import Client
-    from opbeat.transport.base import TransportException
+    from elasticapm.contrib.asyncio import Client
+    from elasticapm.transport.base import TransportException
 
     client = Client(
         servers=['http://opbeat'],
         app_name='app_name',
         secret_token='secret',
         async_mode=False,
-        transport_class='opbeat.transport.asyncio.AsyncioHTTPTransport',
+        transport_class='elasticapm.transport.asyncio.AsyncioHTTPTransport',
     )
     mock_client = mocker.Mock()
     mock_client.post = mocker.Mock(side_effect=RuntimeError('oops'))

@@ -2,7 +2,7 @@ import time
 
 from mock import Mock
 
-from opbeat.traces import TransactionsStore, get_transaction, trace
+from elasticapm.traces import TransactionsStore, get_transaction, trace
 from tests.utils.compat import TestCase
 
 
@@ -11,7 +11,7 @@ class RequestStoreTest(TestCase):
         self.mock_get_frames = Mock()
 
         frames = [{'function': 'something_expensive',
-                   'abs_path': '/var/parent-opbeat/opbeat_python/tests/contrib/django/testapp/views.py',
+                   'abs_path': '/var/parent-elasticapm/opbeat_python/tests/contrib/django/testapp/views.py',
                    'lineno': 52, 'module': 'tests.contrib.django.testapp.views',
                    'filename': 'tests/contrib/django/testapp/views.py'},
                   {'function': '_resolve_lookup',
@@ -26,7 +26,7 @@ class RequestStoreTest(TestCase):
                    'abs_path': '/home/ron/.virtualenvs/opbeat_python/local/lib/python2.7/site-packages/django/template/base.py',
                    'lineno': 585, 'module': 'django.template.base',
                    'filename': 'django/template/base.py'}, {'lineno': 4,
-                                                            'filename': u'/var/parent-opbeat/opbeat_python/tests/contrib/django/testapp/templates/list_fish.html'},
+                                                            'filename': u'/var/parent-elasticapm/opbeat_python/tests/contrib/django/testapp/templates/list_fish.html'},
                   {'function': 'render',
                    'abs_path': '/home/ron/.virtualenvs/opbeat_python/local/lib/python2.7/site-packages/django/template/defaulttags.py',
                    'lineno': 4, 'module': 'django.template.defaulttags',
@@ -76,7 +76,7 @@ class RequestStoreTest(TestCase):
                                                           'module': 'django.test.client',
                                                           'filename': 'django/test/client.py'},
                   {'function': 'test_template_name_as_view',
-                   'abs_path': '/var/parent-opbeat/opbeat_python/tests/contrib/django/django_tests.py',
+                   'abs_path': '/var/parent-elasticapm/opbeat_python/tests/contrib/django/django_tests.py',
                    'lineno': 710, 'module': 'tests.contrib.django.django_tests',
                    'filename': 'tests/contrib/django/django_tests.py'}]
 

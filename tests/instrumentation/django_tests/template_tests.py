@@ -11,7 +11,7 @@ import mock
 import pytest
 
 from conftest import BASE_TEMPLATE_DIR
-from opbeat.contrib.django.models import get_client, opbeat
+from elasticapm.contrib.django.models import get_client, elasticapm
 
 # Testing Django 1.8+ backends
 TEMPLATES = (
@@ -33,13 +33,13 @@ TEMPLATES = (
 class TracesTest(TestCase):
     def setUp(self):
         self.opbeat = get_client()
-        opbeat.instrumentation.control.instrument()
+        elasticapm.instrumentation.control.instrument()
 
-    @mock.patch("opbeat.traces.TransactionsStore.should_collect")
+    @mock.patch("elasticapm.traces.TransactionsStore.should_collect")
     def test_template_rendering(self, should_collect):
         should_collect.return_value = False
         with self.settings(MIDDLEWARE_CLASSES=[
-            'opbeat.contrib.django.middleware.OpbeatAPMMiddleware']):
+            'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware']):
             self.client.get(reverse('render-heavy-template'))
             self.client.get(reverse('render-heavy-template'))
             self.client.get(reverse('render-heavy-template'))
@@ -68,11 +68,11 @@ class TracesTest(TestCase):
 
     @pytest.mark.skipif(django.VERSION < (1, 8),
                         reason='Jinja2 support introduced with Django 1.8')
-    @mock.patch("opbeat.traces.TransactionsStore.should_collect")
+    @mock.patch("elasticapm.traces.TransactionsStore.should_collect")
     def test_template_rendering_django18_jinja2(self, should_collect):
         should_collect.return_value = False
         with self.settings(MIDDLEWARE_CLASSES=[
-                'opbeat.contrib.django.middleware.OpbeatAPMMiddleware'],
+                'elasticapm.contrib.django.middleware.OpbeatAPMMiddleware'],
                 TEMPLATES=TEMPLATES
             ):
             self.client.get(reverse('render-jinja2-template'))

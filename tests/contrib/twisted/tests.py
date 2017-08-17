@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from twisted.python.failure import Failure
 
-from opbeat.contrib.twisted import OpbeatLogObserver
+from elasticapm.contrib.twisted import OpbeatLogObserver
 from tests.helpers import get_tempstoreclient
 from tests.utils.compat import TestCase
 

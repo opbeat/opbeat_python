@@ -3,7 +3,7 @@
 opbeat
 ======
 
-opbeat is a Python client for `Opbeat <https://opbeat.com/>`_. It provides
+opbeat is a Python client for `Opbeat <https://elasticapm.com/>`_. It provides
 full out-of-the-box support for many of the popular frameworks, including
 `Django <djangoproject.com>`_, `Flask <http://flask.pocoo.org/>`_, and `Pylons
 <http://www.pylonsproject.org/>`_. opbeat also includes drop-in support for any
@@ -25,7 +25,7 @@ import os
 from codecs import open
 
 from setuptools import setup, find_packages, Extension
-from opbeat.version import VERSION
+from elasticapm.version import VERSION
 from setuptools.command.test import test as TestCommand
 
 from distutils.command.build_ext import build_ext
@@ -145,7 +145,7 @@ class PyTest(TestCommand):
 
 
 setup_kwargs = dict(
-    name='opbeat',
+    name='elasticapm',
     version=VERSION,
     author='Opbeat, Inc',
     author_email='support@opbeat.com',
@@ -164,7 +164,7 @@ setup_kwargs = dict(
     include_package_data=True,
     entry_points={
         'paste.filter_app_factory': [
-            'opbeat = opbeat.contrib.paste:opbeat_filter_factory',
+            'elasticapm = elasticapm.contrib.paste:opbeat_filter_factory',
         ],
     },
     classifiers=[
@@ -185,7 +185,7 @@ def run_setup(with_extensions):
 
     if with_extensions:
         setup_kwargs_tmp['ext_modules'] = [Extension(
-            'opbeat.utils.wrapt._wrappers', ['opbeat/utils/wrapt/_wrappers.c']
+            'elasticapm.utils.wrapt._wrappers', ['elasticapm/utils/wrapt/_wrappers.c']
         )]
         setup_kwargs_tmp['cmdclass']['build_ext'] = optional_build_ext
 

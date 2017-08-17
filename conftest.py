@@ -54,7 +54,7 @@ def pytest_configure(config):
 
                 'django.contrib.contenttypes',
 
-                'opbeat.contrib.django',
+                'elasticapm.contrib.django',
                 'tests.contrib.django.testapp',
             ] + djcelery,
             ROOT_URLCONF='tests.contrib.django.testapp.urls',

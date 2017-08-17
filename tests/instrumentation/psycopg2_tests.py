@@ -3,9 +3,9 @@ import os
 
 import pytest
 
-from opbeat.instrumentation import control
-from opbeat.instrumentation.packages.psycopg2 import (PGCursorProxy,
-                                                      extract_signature)
+from elasticapm.instrumentation import control
+from elasticapm.instrumentation.packages.psycopg2 import (PGCursorProxy,
+                                                          extract_signature)
 from tests.contrib.django.django_tests import get_client
 
 try:
@@ -260,7 +260,7 @@ def test_psycopg2_tracing_outside_of_opbeat_transaction(postgres_connection):
     client = get_client()
     control.instrument()
     cursor = postgres_connection.cursor()
-    # check that the cursor is a proxy, even though we're not in an opbeat
+    # check that the cursor is a proxy, even though we're not in an elasticapm
     # transaction
     assert isinstance(cursor, PGCursorProxy)
     cursor.execute('SELECT 1')

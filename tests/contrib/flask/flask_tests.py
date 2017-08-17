@@ -4,7 +4,7 @@ pytest.importorskip("flask")  # isort:skip
 import mock
 from flask import Flask, render_template, signals
 
-from opbeat.contrib.flask import Opbeat
+from elasticapm.contrib.flask import Opbeat
 from tests.helpers import get_tempstoreclient
 from tests.utils.compat import TestCase
 
@@ -117,7 +117,7 @@ class FlaskTest(TestCase):
         self.assertEquals(env['SERVER_PORT'], '80')
 
     def test_instrumentation(self):
-        with mock.patch("opbeat.traces.TransactionsStore.should_collect") as should_collect:
+        with mock.patch("elasticapm.traces.TransactionsStore.should_collect") as should_collect:
             should_collect.return_value = False
             resp = self.client.post('/users/')
 
@@ -142,7 +142,7 @@ class FlaskTest(TestCase):
         assert traces[0]['type'] == 'template.jinja2'
 
     def test_instrumentation_404(self):
-        with mock.patch("opbeat.traces.TransactionsStore.should_collect") as should_collect:
+        with mock.patch("elasticapm.traces.TransactionsStore.should_collect") as should_collect:
             should_collect.return_value = False
             resp = self.client.post('/no-such-page/')
 
