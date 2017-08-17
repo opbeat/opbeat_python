@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import pytest  # isort:skip
 
+from tests.contrib.django.testapp.views import IgnoredException
+
 django = pytest.importorskip("django")  # isort:skip
 
 import datetime
@@ -342,6 +344,11 @@ class DjangoClientTest(TestCase):
 
         self.assertEquals(event['culprit'], 'django.shortcuts.get_object_or_404')
         self.opbeat.include_paths = include_paths
+
+    def test_ignored_exception_is_ignored(self):
+        with pytest.raises(IgnoredException):
+            self.client.get(reverse('elasticapm-ignored-exception'))
+        self.assertEquals(len(self.opbeat.events), 0)
 
     def test_template_name_as_view(self):
         # TODO this test passes only with TEMPLATE_DEBUG=True
@@ -1036,7 +1043,6 @@ def test_stacktrace_filtered_for_opbeat():
 
     # Top frame should be inside django rendering
     assert traces[1]['stacktrace'][0]['module'].startswith('django.template')
-
 
 def test_perf_template_render(benchmark):
     client = _TestClient()
