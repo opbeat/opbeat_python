@@ -5,16 +5,16 @@ from elasticapm.base import Client
 
 
 @implementer(ILogObserver)
-class OpbeatLogObserver(object):
+class LogObserver(object):
     """
-    A twisted log observer for Opbeat.
+    A twisted log observer for Elastic APM.
     Eg.:
 
     from elasticapm.base import Client
     from twisted.logger import Logger
 
     client = Client(...)
-    observer = OpbeatLogObserver(client=client)
+    observer = LogObserver(client=client)
     log = Logger(observer=observer)
 
     try:
