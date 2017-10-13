@@ -1,3 +1,8 @@
+## 3.5.3 ##
+
+ * added instrumentation for Botocore (#155, thanks @szilveszter)
+ * several bugfixes
+
 ## 3.5.2 ##
  * Fixed a threading bug (#144, thanks @rossgray for the report)
  * Fixed a bug when handling `DisallowedHost` exceptions in Django 1.9+
