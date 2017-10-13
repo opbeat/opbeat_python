@@ -22,7 +22,7 @@ from opbeat.utils.encoding import to_string
 from opbeat.utils.stacks import iter_stack_frames
 
 
-class OpbeatHandler(logging.Handler, object):
+class OpbeatHandler(logging.Handler):
     def __init__(self, *args, **kwargs):
         client = kwargs.pop('client_cls', Client)
         if len(args) == 1:
@@ -42,7 +42,7 @@ class OpbeatHandler(logging.Handler, object):
         else:
             self.client = client(*args, **kwargs)
 
-        super(OpbeatHandler, self).__init__(*args, **kwargs)
+        logging.Handler.__init__(self, level=kwargs.get('level', logging.NOTSET))
 
     def emit(self, record):
         self.format(record)

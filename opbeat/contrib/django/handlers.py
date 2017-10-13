@@ -17,8 +17,8 @@ from opbeat.handlers.logging import OpbeatHandler as BaseOpbeatHandler
 
 
 class OpbeatHandler(BaseOpbeatHandler):
-    def __init__(self):
-        logging.Handler.__init__(self)
+    def __init__(self, level=logging.NOTSET):
+        logging.Handler.__init__(self, level=level)
 
     def _get_client(self):
         from opbeat.contrib.django.models import client

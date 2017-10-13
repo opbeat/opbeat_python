@@ -176,3 +176,12 @@ class LoggingHandlerTest(TestCase):
 
     def test_invalid_first_arg_type(self):
         self.assertRaises(ValueError, OpbeatHandler, object)
+
+
+def test_logger_setup():
+    handler = OpbeatHandler(organization_id='foo', app_id='bar', secret_token='baz')
+    client = handler.client
+    assert client.organization_id == 'foo'
+    assert client.app_id == 'bar'
+    assert client.secret_token == 'baz'
+    assert handler.level == logging.NOTSET
