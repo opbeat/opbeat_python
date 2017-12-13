@@ -28,12 +28,17 @@ def pytest_configure(config):
     if settings is not None and not settings.configured:
         import django
 
+        if django.VERSION >= (2, 0):
+            middleware_settings_name = 'MIDDLEWARE'
+        else:
+            middleware_settings_name = 'MIDDLEWARE_CLASSES'
+
         # django-celery does not work well with Django 1.8+
         if django.VERSION < (1, 8):
             djcelery = ['djcelery']
         else:
             djcelery = []
-        settings.configure(
+        settings_dict = dict(
             DATABASES={
                 'default': {
                     'ENGINE': 'django.db.backends.sqlite3',
@@ -91,6 +96,12 @@ def pytest_configure(config):
             ]
 
         )
+        settings_dict[middleware_settings_name] = [
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.contrib.auth.middleware.AuthenticationMiddleware',
+            'django.contrib.messages.middleware.MessageMiddleware',
+        ]
+        settings.configure(**settings_dict)
         if hasattr(django, 'setup'):
             django.setup()
         if django.VERSION < (1, 8):

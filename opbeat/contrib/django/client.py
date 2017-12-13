@@ -64,27 +64,27 @@ class DjangoClient(Client):
         super(DjangoClient, self).__init__(**kwargs)
 
     def get_user_info(self, request):
-        try:
-            if request.user.is_authenticated():
-                user_info = {
-                    'is_authenticated': True,
-                    'id': request.user.pk,
-                }
-                if hasattr(request.user, 'get_username'):
-                    user_info['username'] = request.user.get_username()
-                elif hasattr(request.user, 'username'):
-                    user_info['username'] = request.user.username
-                else:
-                    # this only happens if the project uses custom user models, but
-                    # doesn't correctly inherit from AbstractBaseUser
-                    user_info['username'] = ''
+        user_info = {}
 
-                if hasattr(request.user, 'email'):
-                    user_info['email'] = request.user.email
-            else:
-                user_info = {
-                    'is_authenticated': False,
-                }
+        if not hasattr(request, 'user'):
+            return user_info
+        try:
+            user = request.user
+            if hasattr(user, 'is_authenticated'):
+                if callable(user.is_authenticated):
+                    user_info['is_authenticated'] = user.is_authenticated()
+                else:
+                    user_info['is_authenticated'] = bool(user.is_authenticated)
+            if hasattr(user, 'id'):
+                user_info['id'] = user.id
+            if hasattr(user, 'get_username'):
+                username = user.get_username()
+            elif hasattr(user, 'username'):
+                username = user.username
+            if username:
+                user_info['username'] = username
+            if hasattr(user, 'email'):
+                user_info['email'] = user.email
         except DatabaseError:
             # If the connection is closed or similar, we'll just skip this
             return {}
