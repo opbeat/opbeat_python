@@ -14,6 +14,7 @@ from __future__ import absolute_import
 import logging
 import threading
 
+import django
 from django.conf import settings as django_settings
 
 from opbeat.contrib.django.models import client, get_client
@@ -32,6 +33,11 @@ except ImportError:
     class MiddlewareMixin(object):
         pass
 
+
+if django.VERSION >= (2, 0):
+    middleware_settings_name = 'MIDDLEWARE'
+else:
+    middleware_settings_name = 'MIDDLEWARE_CLASSES'
 
 def _is_ignorable_404(uri):
     """
@@ -122,8 +128,8 @@ class OpbeatAPMMiddleware(MiddlewareMixin):
                     OpbeatAPMMiddleware._opbeat_instrumented = True
 
     def instrument_middlewares(self):
-        if getattr(django_settings, 'MIDDLEWARE_CLASSES', None):
-            for middleware_path in django_settings.MIDDLEWARE_CLASSES:
+        if getattr(django_settings, middleware_settings_name, None):
+            for middleware_path in getattr(django_settings, middleware_settings_name):
                 module_path, class_name = middleware_path.rsplit('.', 1)
                 try:
                     module = import_module(module_path)

@@ -4,7 +4,6 @@ pytest.importorskip("django")  # isort:skip
 from os.path import join
 
 import django
-from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 import mock
@@ -12,6 +11,12 @@ import pytest
 
 from conftest import BASE_TEMPLATE_DIR
 from opbeat.contrib.django.models import get_client, opbeat
+
+try:
+    # Django 1.10+
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 
 # Testing Django 1.8+ backends
 TEMPLATES = (
@@ -29,6 +34,11 @@ TEMPLATES = (
     },
 )
 
+if django.VERSION >= (2, 0):
+    middleware_settings_name = 'MIDDLEWARE'
+else:
+    middleware_settings_name = 'MIDDLEWARE_CLASSES'
+
 
 class TracesTest(TestCase):
     def setUp(self):
@@ -38,8 +48,8 @@ class TracesTest(TestCase):
     @mock.patch("opbeat.traces.RequestsStore.should_collect")
     def test_template_rendering(self, should_collect):
         should_collect.return_value = False
-        with self.settings(MIDDLEWARE_CLASSES=[
-            'opbeat.contrib.django.middleware.OpbeatAPMMiddleware']):
+        with self.settings(**{middleware_settings_name: [
+            'opbeat.contrib.django.middleware.OpbeatAPMMiddleware']}):
             self.client.get(reverse('render-heavy-template'))
             self.client.get(reverse('render-heavy-template'))
             self.client.get(reverse('render-heavy-template'))
@@ -82,10 +92,10 @@ class TracesTest(TestCase):
     @mock.patch("opbeat.traces.RequestsStore.should_collect")
     def test_template_rendering_django18_jinja2(self, should_collect):
         should_collect.return_value = False
-        with self.settings(MIDDLEWARE_CLASSES=[
+        with self.settings(**{middleware_settings_name: [
                 'opbeat.contrib.django.middleware.OpbeatAPMMiddleware'],
-                TEMPLATES=TEMPLATES
-            ):
+                'TEMPLATES': TEMPLATES
+            }):
             self.client.get(reverse('render-jinja2-template'))
             self.client.get(reverse('render-jinja2-template'))
             self.client.get(reverse('render-jinja2-template'))
