@@ -1,14 +1,17 @@
-## 3.5.3 ##
+## 3.6 ##
+ * fixed compatibility issues with Django 2.0
+
+### 3.5.3 ###
 
  * added instrumentation for Botocore (#155, thanks @szilveszter)
  * several bugfixes
 
-## 3.5.2 ##
+### 3.5.2 ###
  * Fixed a threading bug (#144, thanks @rossgray for the report)
  * Fixed a bug when handling `DisallowedHost` exceptions in Django 1.9+
    (#143, thanks @blueyed for the report and patch)
 
-## 3.5.1 ##
+### 3.5.1 ###
  * Fixed two bugs related to SQL parsing that could cause an IndexError.
 
 ## 3.5 ##
