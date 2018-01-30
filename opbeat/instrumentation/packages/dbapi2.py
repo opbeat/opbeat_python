@@ -123,6 +123,11 @@ def scan(tokens):
 
 
 def extract_signature(sql):
+    """
+    Extracts a minimal signature from a given SQL query
+    :param sql: the SQL statement
+    :return: a string representing the signature
+    """
     sql = sql.strip()
     first_space = sql.find(' ')
     if first_space < 0:
@@ -172,10 +177,17 @@ class CursorProxy(wrapt.ObjectProxy):
         return self._trace_sql(self.__wrapped__.executemany, sql,
                                param_list)
 
+    def _bake_sql(self, sql):
+        """
+        Method to turn the "sql" argument into a string
+        """
+        return sql
+
     def _trace_sql(self, method, sql, params):
-        signature = self.extract_signature(sql)
+        sql_string = self._bake_sql(sql)
+        signature = self.extract_signature(sql_string)
         kind = "db.{0}.sql".format(self.provider_name)
-        with trace(signature, kind, {"sql": sql}):
+        with trace(signature, kind, {"sql": sql_string}):
             if params is None:
                 return method(sql)
             else:

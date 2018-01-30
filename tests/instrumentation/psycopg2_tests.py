@@ -14,6 +14,13 @@ try:
 except ImportError:
     has_psycopg2 = False
 
+try:
+    from psycopg2 import sql as sql_compose
+    has_sql_module = True
+except ImportError:
+    # as of Jan 2018, psycopg2cffi doesn't have this module
+    has_sql_module = False
+
 travis_and_psycopg2 = 'TRAVIS' not in os.environ or not has_psycopg2
 
 
@@ -209,6 +216,7 @@ def test_multi_statement_sql():
 
     assert "CREATE TABLE" == actual
 
+
 @pytest.mark.skipif(travis_and_psycopg2,
                     reason="Requires postgres server. Only runs on travisci.")
 def test_psycopg2_register_type(postgres_connection):
@@ -289,3 +297,34 @@ def test_psycopg2_select_LIKE(postgres_connection):
         transactions, traces = client.instrumentation_store.get_all()
         traces = [t for t in traces if t['parents']]
         assert traces[0]['signature'] == 'SELECT FROM test'
+
+
+@pytest.mark.skipif(travis_and_psycopg2,
+                    reason="Requires postgres server. Only runs on travisci.")
+@pytest.mark.skipif(not has_sql_module, reason="psycopg2.sql module missing")
+def test_psycopg2_composable_query_works(postgres_connection):
+    """
+    Check that we pass queries with %-notation but without parameters
+    properly to the dbapi backend
+    """
+    client = get_client()
+    control.instrument()
+    cursor = postgres_connection.cursor()
+    query = sql_compose.SQL("SELECT * FROM {table} WHERE {row} LIKE 't%' ORDER BY {row} DESC").format(
+        table=sql_compose.Identifier('test'),
+        row=sql_compose.Identifier('name'),
+    )
+    baked_query = query.as_string(cursor.__wrapped__)
+    result = None
+    try:
+        client.begin_transaction("web.django")
+        cursor.execute(query)
+        result = cursor.fetchall()
+        client.end_transaction(None, "test-transaction")
+    finally:
+        # make sure we've cleared out the spans for the other tests.
+        assert [(2, 'two'), (3, 'three')] == result
+        transactions, traces = client.instrumentation_store.get_all()
+        traces = [t for t in traces if t['parents']]
+        assert traces[0]['signature'] == 'SELECT FROM test'
+        assert traces[0]['extra']['sql'] == baked_query
