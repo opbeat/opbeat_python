@@ -1,3 +1,7 @@
+### 3.6.1 ###
+ * added support for [`psycopg2.sql.SQL`](http://initd.org/psycopg/docs/sql.html) objects
+   (#197, thanks @nicoknoll for the report)
+
 ## 3.6 ##
  * fixed compatibility issues with Django 2.0
 
